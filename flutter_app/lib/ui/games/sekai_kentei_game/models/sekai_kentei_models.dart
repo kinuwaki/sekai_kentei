@@ -1,7 +1,18 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import '../../base/common_game_phase.dart';
 
 part 'sekai_kentei_models.freezed.dart';
+
+/// ゲームの共通フェーズ
+enum CommonGamePhase {
+  ready,         // 準備中（設定画面）
+  displaying,    // 問題表示中
+  questioning,   // 回答受付中
+  processing,    // 処理中
+  feedbackOk,    // 正解フィードバック
+  feedbackNg,    // 不正解フィードバック
+  transitioning, // 次の問題へ遷移中
+  completed,     // ゲーム完了
+}
 
 /// クイズのテーマ（カテゴリー）
 enum QuizTheme {
@@ -35,6 +46,7 @@ abstract class SekaiKenteiProblem with _$SekaiKenteiProblem {
     required String question,  // 問題文
     required List<String> options,  // 選択肢（4つ）
     required int correctIndex,  // 正解のインデックス
+    @Default('') String explanation,  // 解説
   }) = _SekaiKenteiProblem;
 
   const SekaiKenteiProblem._();

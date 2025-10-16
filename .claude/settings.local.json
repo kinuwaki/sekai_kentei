@@ -130,7 +130,16 @@
       "Bash(npm run qa:web:*)",
       "Bash(npm init:*)",
       "Bash(npm install:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(nc localhost 56638)",
+      "Bash(nc localhost 57732)",
+      "Bash(xcrun simctl:*)",
+      "Bash(nc localhost 63398)",
+      "Bash(printf \"q\\n\")",
+      "Bash(nc localhost 64549)",
+      "Bash(nc localhost 65426)",
+      "Bash(nc localhost 50074)",
+      "Bash(nc localhost 52179)"
     ],
     "deny": [],
     "ask": [],
@@ -138,9 +147,9 @@
       "D:\\d D:\\monaka2"
     ]
   },
+  "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "cipher",
     "serena"
-  ],
-  "enableAllProjectMcpServers": true
+  ]
 }

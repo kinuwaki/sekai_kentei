@@ -3,44 +3,28 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/debug_logger.dart';
-import '../base/common_game_phase.dart';
-import '../base/answer_handler_mixin.dart';
 import '../../../services/sekai_kentei_csv_loader.dart';
+import '../../../services/wrong_answer_storage.dart';
 import 'models/sekai_kentei_models.dart';
 
-class ModernSekaiKenteiLogic extends StateNotifier<SekaiKenteiState>
-    with AnswerHandlerMixin {
+class ModernSekaiKenteiLogic extends StateNotifier<SekaiKenteiState> {
   static const String _tag = 'SekaiKenteiLogic';
   final Random _random = Random();
   final SekaiKenteiCsvLoader _csvLoader = SekaiKenteiCsvLoader();
 
   List<QuizQuestion>? _allQuestions;
   List<QuizQuestion>? _currentThemeQuestions;
+  bool _isReviewMode = false;
 
   ModernSekaiKenteiLogic() : super(const SekaiKenteiState());
-
-  // AnswerHandlerMixin実装（必須）
-  @override
-  String get gameTitle => _tag;
-
-  @override
-  bool checkEpoch(int epoch) => state.epoch == epoch;
-
-  @override
-  Future<void> proceedToNext() => _proceedToNext(state.session?.wrongAnswers == 0);
-
-  @override
-  void returnToQuestioning() {
-    if (state.session == null) return;
-    state = state.copyWith(phase: CommonGamePhase.questioning);
-  }
 
   String? get questionText => state.questionText;
   double get progress => state.progress;
   bool get isBusy => state.isProcessing;
 
-  Future<void> startGame(SekaiKenteiSettings settings) async {
-    Log.d('ゲーム開始: ${settings.displayName}', tag: _tag);
+  Future<void> startGame(SekaiKenteiSettings settings, {bool isReviewMode = false}) async {
+    _isReviewMode = isReviewMode;
+    Log.d('ゲーム開始: ${settings.displayName}${isReviewMode ? ' (復習モード)' : ''}', tag: _tag);
 
     // CSVから問題を読み込む
     try {
@@ -131,37 +115,50 @@ class ModernSekaiKenteiLogic extends StateNotifier<SekaiKenteiState>
       isPerfect: isCorrect && session.wrongAnswers == 0,
     );
 
+    // 結果を状態に反映
+    final updatedResults = List<bool?>.from(session.results);
+
     if (isCorrect) {
-      await handleCorrectAnswer(
-        epoch: currentEpoch,
-        updateState: () {
-          final updatedResults = List<bool?>.from(session.results);
-          updatedResults[session.index] = result.isPerfect;
-          state = state.copyWith(
-            phase: CommonGamePhase.feedbackOk,
-            lastResult: result,
-            session: session.copyWith(results: updatedResults),
-          );
-        },
+      updatedResults[session.index] = result.isPerfect;
+      state = state.copyWith(
+        phase: CommonGamePhase.feedbackOk,
+        lastResult: result,
+        session: session.copyWith(results: updatedResults),
       );
+
+      // 復習モードの場合、正解した問題を削除
+      if (_isReviewMode) {
+        await WrongAnswerStorage.removeWrongAnswer(problem.question);
+        Log.d('復習モード: 正解した問題を削除しました', tag: _tag);
+      }
     } else {
-      await handleWrongAnswer(
-        epoch: currentEpoch,
-        updateState: () {
-          final updatedResults = List<bool?>.from(session.results);
-          updatedResults[session.index] = false;
-          state = state.copyWith(
-            phase: CommonGamePhase.feedbackNg,
-            lastResult: result,
-            session: session.copyWith(
-              results: updatedResults,
-              wrongAnswers: session.wrongAnswers + 1,
-            ),
-          );
-        },
-        allowRetry: false, // 世界遺産クイズは再挑戦なし
+      updatedResults[session.index] = false;
+      state = state.copyWith(
+        phase: CommonGamePhase.feedbackNg,
+        lastResult: result,
+        session: session.copyWith(
+          results: updatedResults,
+          wrongAnswers: session.wrongAnswers + 1,
+        ),
       );
+
+      // 間違えた問題を保存
+      final correctAnswer = problem.options[problem.correctIndex];
+      await WrongAnswerStorage.addWrongAnswer(problem.question, correctAnswer);
     }
+
+    // 自動では次に進まない（ユーザーが「次の問題へ」ボタンを押すまで待機）
+  }
+
+  /// 次の問題へ進む（外部から呼び出し可能）
+  Future<void> nextQuestion() async {
+    if (state.phase != CommonGamePhase.feedbackOk &&
+        state.phase != CommonGamePhase.feedbackNg) {
+      return;
+    }
+
+    final lastResult = state.lastResult;
+    await _proceedToNext(lastResult?.isPerfect ?? false);
   }
 
   Future<void> _proceedToNext(bool isPerfect) async {
@@ -170,7 +167,8 @@ class ModernSekaiKenteiLogic extends StateNotifier<SekaiKenteiState>
     final session = state.session!;
     final settings = state.settings!;
 
-    await waitForTransition(); // AnswerHandlerMixinの共通待機処理
+    // 遷移待機
+    await Future.delayed(const Duration(milliseconds: 300));
 
     if (session.index + 1 >= session.total) {
       Log.d('ゲーム完了', tag: _tag);
@@ -228,6 +226,7 @@ class ModernSekaiKenteiLogic extends StateNotifier<SekaiKenteiState>
       question: csvQuestion.question,
       options: options,
       correctIndex: correctIndex,
+      explanation: csvQuestion.explanation,
     );
   }
 

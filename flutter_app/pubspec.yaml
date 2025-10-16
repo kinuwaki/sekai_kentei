@@ -1,5 +1,5 @@
 name: flutter_app
-description: "もんすたーあかでみー - Monster Academy educational games for children"
+description: "世界検定４級 - World Heritage Quiz Grade 4"
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -32,22 +32,10 @@ dependencies:
     sdk: flutter
   flutter_riverpod: ^2.4.9
   cupertino_icons: ^1.0.8
-  flutter_tts: ^4.2.3
   audioplayers: ^6.0.0  # For playing sound effects
-  crypto: ^3.0.3  # For MD5 hash generation
-  path_provider: ^2.1.5  # For getting app directories
-  http: ^1.2.0  # For HTTP requests
-  path_drawing: ^1.0.1    # For SVG path animations
-  google_mlkit_text_recognition: ^0.15.0  # For text recognition (OCR) only
-  google_mlkit_digital_ink_recognition: ^0.14.1  # For handwriting recognition
   js: ^0.7.2  # For @JS annotations in web platform
-  auto_size_text: ^3.0.0  # For automatic text sizing
   freezed_annotation: ^3.1.0
-  yaml: ^3.1.2  # For YAML parsing
   shared_preferences: ^2.5.3  # For progress storage
-  uuid: ^4.5.1
-  json_annotation: ^4.9.0
-  sqflite: ^2.4.2
 
 dev_dependencies:
   flutter_test:
@@ -84,23 +72,9 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - assets/config.dev.json
-    - assets/config.staging.json
-    - assets/lessons/
     - assets/quiz/
-    - assets/images/
-    - assets/images/menu/
-    - assets/images/buttons/
-    - assets/images/monsters/
-    - assets/images/screenshot/
-    - assets/images/figures/puzzle/
-    - assets/images/figures/vocabulary/hiragana/
-    - assets/images/figures/vocabulary/katakana/
-    - assets/images/figures/geometry/
-    - assets/images/figures/tsumiki/
+    - assets/images/icon.png
     - assets/audio/
-    - assets/svg/
-    - assets/voice/
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
 

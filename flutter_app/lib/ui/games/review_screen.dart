@@ -1,0 +1,231 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../services/wrong_answer_storage.dart';
+import 'sekai_kentei_game/sekai_kentei_screen.dart';
+import 'sekai_kentei_game/models/sekai_kentei_models.dart';
+
+/// 復習画面（間違えた問題のリスト）
+class ReviewScreen extends ConsumerStatefulWidget {
+  const ReviewScreen({super.key});
+
+  @override
+  ConsumerState<ReviewScreen> createState() => _ReviewScreenState();
+}
+
+class _ReviewScreenState extends ConsumerState<ReviewScreen> {
+  int _wrongAnswerCount = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadWrongAnswerCount();
+  }
+
+  Future<void> _loadWrongAnswerCount() async {
+    final count = await WrongAnswerStorage.getWrongAnswerCount();
+    if (mounted) {
+      setState(() {
+        _wrongAnswerCount = count;
+      });
+    }
+  }
+
+  /// 復習を始める
+  void _startReview() {
+    if (_wrongAnswerCount == 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('間違えた問題がまだありません'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    Navigator.push(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => SekaiKenteiScreen(
+          themeKey: '復習',
+          questionCount: _wrongAnswerCount,
+          mode: QuizMode.review,
+          initialSettings: SekaiKenteiSettings(theme: QuizTheme.basic),
+        ),
+        transitionDuration: Duration.zero,
+        reverseTransitionDuration: Duration.zero,
+      ),
+    ).then((_) => _loadWrongAnswerCount()); // 復習から戻ったら再読み込み
+  }
+
+  /// 間違えた問題をリセット
+  Future<void> _resetWrongAnswers() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('確認', style: TextStyle(fontWeight: FontWeight.bold)),
+        content: const Text('間違えた問題をすべてリセットしますか？'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('キャンセル'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('リセット'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await WrongAnswerStorage.clearWrongAnswers();
+      _loadWrongAnswerCount();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('間違えた問題をリセットしました'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        color: const Color(0xFFE3F2FD), // 薄い青色で統一
+        child: SafeArea(
+          child: Center(
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 600),
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    '復習',
+                    style: TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1976D2),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        Text(
+                          '間違えた問題が${_wrongAnswerCount}問あります',
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF424242),
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 32),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 56,
+                          child: ElevatedButton(
+                            onPressed: _wrongAnswerCount > 0 ? _startReview : null,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF5B9BD5),
+                              foregroundColor: Colors.white,
+                              disabledBackgroundColor: Colors.grey.shade300,
+                              elevation: 4,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                            child: const Text(
+                              '復習を始める',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 56,
+                          child: ElevatedButton(
+                            onPressed: _wrongAnswerCount > 0 ? _resetWrongAnswers : null,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red.shade400,
+                              foregroundColor: Colors.white,
+                              disabledBackgroundColor: Colors.grey.shade300,
+                              elevation: 4,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                            child: const Text(
+                              '間違えた問題をリセット',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: 1,
+        backgroundColor: Colors.white,
+        selectedItemColor: Colors.blue,
+        unselectedItemColor: Colors.grey,
+        type: BottomNavigationBarType.fixed,
+        selectedFontSize: 12,
+        unselectedFontSize: 12,
+        onTap: (index) {
+          if (index == 1) {
+            // 復習タブ - 現在の画面なので何もしない
+            return;
+          }
+          // その他のタブは前の画面に戻る
+          Navigator.pop(context);
+        },
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.school, size: 24),
+            label: '問題演習',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.history_edu, size: 24),
+            label: '復習',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.assignment, size: 24),
+            label: 'テスト',
+          ),
+        ],
+      ),
+    );
+  }
+}
