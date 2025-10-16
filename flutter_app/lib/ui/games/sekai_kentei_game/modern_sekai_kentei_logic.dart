@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/debug_logger.dart';
 import '../../../services/sekai_kentei_csv_loader.dart';
 import '../../../services/wrong_answer_storage.dart';
+import '../../../services/audio_service.dart';
 import 'models/sekai_kentei_models.dart';
 
 class ModernSekaiKenteiLogic extends StateNotifier<SekaiKenteiState> {
@@ -119,6 +120,9 @@ class ModernSekaiKenteiLogic extends StateNotifier<SekaiKenteiState> {
     final updatedResults = List<bool?>.from(session.results);
 
     if (isCorrect) {
+      // 正解音を再生
+      await AudioService.playCorrect();
+
       updatedResults[session.index] = result.isPerfect;
       state = state.copyWith(
         phase: CommonGamePhase.feedbackOk,
@@ -132,6 +136,9 @@ class ModernSekaiKenteiLogic extends StateNotifier<SekaiKenteiState> {
         Log.d('復習モード: 正解した問題を削除しました', tag: _tag);
       }
     } else {
+      // 不正解音を再生
+      await AudioService.playIncorrect();
+
       updatedResults[session.index] = false;
       state = state.copyWith(
         phase: CommonGamePhase.feedbackNg,

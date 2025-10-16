@@ -83,12 +83,15 @@ class _TestModeSelectionScreenState extends ConsumerState<TestModeSelectionScree
         selectedFontSize: 12,
         unselectedFontSize: 12,
         onTap: (index) {
+          print('[TestModeSelection] BottomNav tapped: index=$index');
           if (index == 2) {
             // テストタブ - 現在の画面なので何もしない
+            print('[TestModeSelection] Same tab, ignoring');
             return;
           }
-          // その他のタブは前の画面に戻る
-          Navigator.pop(context);
+          print('[TestModeSelection] Popping with target tab index: $index');
+          // DailyChallengeScreenまで戻り、タップされたタブのインデックスを返す
+          Navigator.pop(context, {'targetTabIndex': index});
         },
         items: const [
           BottomNavigationBarItem(

@@ -16,29 +16,6 @@ class DailyChallengeScreen extends ConsumerStatefulWidget {
 class _DailyChallengeScreenState extends ConsumerState<DailyChallengeScreen> {
   int _selectedIndex = 0;
 
-  /// 復習モード開始（間違えた問題のみ）
-  void _startReviewQuiz() {
-    Navigator.push(
-      context,
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => const ReviewScreen(),
-        transitionDuration: Duration.zero,
-        reverseTransitionDuration: Duration.zero,
-      ),
-    );
-  }
-
-  /// テストモード選択画面に遷移
-  void _showTestModeDialog() {
-    Navigator.push(
-      context,
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => const TestModeSelectionScreen(),
-        transitionDuration: Duration.zero,
-        reverseTransitionDuration: Duration.zero,
-      ),
-    );
-  }
 
   Widget _buildThemeButton({
     required QuizTheme theme,
@@ -70,26 +47,79 @@ class _DailyChallengeScreenState extends ConsumerState<DailyChallengeScreen> {
     );
   }
 
-  void _onTabTapped(int index) {
+  void _onTabTapped(int index) async {
+    print('[DailyChallenge] _onTabTapped: index=$index, currentIndex=$_selectedIndex');
+
     // 現在のタブと同じタブをタップした場合は何もしない
     if (_selectedIndex == index) {
+      print('[DailyChallenge] Same tab tapped, ignoring');
       return;
     }
-
-    setState(() {
-      _selectedIndex = index;
-    });
 
     // タブに応じたアクションを実行
     switch (index) {
       case 0:
         // 問題演習 - 現在の画面なので何もしない
+        print('[DailyChallenge] Tab 0 - staying on current screen');
+        setState(() {
+          _selectedIndex = 0;
+        });
         break;
       case 1:
-        _startReviewQuiz();
+        print('[DailyChallenge] Tab 1 - navigating to Review');
+        setState(() {
+          _selectedIndex = 1;
+        });
+        final result = await Navigator.push(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) => const ReviewScreen(),
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
+          ),
+        );
+        // 戻ってきた時の処理
+        if (mounted) {
+          setState(() {
+            _selectedIndex = 0;
+          });
+          print('[DailyChallenge] Returned from Review with result: $result');
+
+          // 他のタブに遷移する必要があるかチェック
+          if (result is Map && result['targetTabIndex'] != null) {
+            final targetIndex = result['targetTabIndex'] as int;
+            print('[DailyChallenge] Navigating to target tab: $targetIndex');
+            _onTabTapped(targetIndex);
+          }
+        }
         break;
       case 2:
-        _showTestModeDialog();
+        print('[DailyChallenge] Tab 2 - navigating to Test');
+        setState(() {
+          _selectedIndex = 2;
+        });
+        final result = await Navigator.push(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) => const TestModeSelectionScreen(),
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
+          ),
+        );
+        // 戻ってきた時の処理
+        if (mounted) {
+          setState(() {
+            _selectedIndex = 0;
+          });
+          print('[DailyChallenge] Returned from Test with result: $result');
+
+          // 他のタブに遷移する必要があるかチェック
+          if (result is Map && result['targetTabIndex'] != null) {
+            final targetIndex = result['targetTabIndex'] as int;
+            print('[DailyChallenge] Navigating to target tab: $targetIndex');
+            _onTabTapped(targetIndex);
+          }
+        }
         break;
     }
   }

@@ -185,12 +185,15 @@ abstract class BaseGameScreenState<W extends BaseGameScreen<TSettings, TState, T
       selectedFontSize: 12,
       unselectedFontSize: 12,
       onTap: (index) {
+        print('[BaseGameScreen] BottomNav tapped: index=$index, currentIndex=$currentIndex');
         // 現在のタブと同じタブをタップした場合は何もしない
         if (currentIndex == index) {
+          print('[BaseGameScreen] Same tab, ignoring');
           return;
         }
-        // DailyChallengeScreenまで戻る（すべての画面をpop）
-        Navigator.of(context).popUntil((route) => route.isFirst);
+        print('[BaseGameScreen] Popping with target tab index: $index');
+        // DailyChallengeScreenまで戻り、タップされたタブのインデックスを返す
+        Navigator.of(context).pop({'targetTabIndex': index});
       },
       items: const [
         BottomNavigationBarItem(

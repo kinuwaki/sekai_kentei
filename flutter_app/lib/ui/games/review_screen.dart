@@ -204,12 +204,15 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
         selectedFontSize: 12,
         unselectedFontSize: 12,
         onTap: (index) {
+          print('[ReviewScreen] BottomNav tapped: index=$index');
           if (index == 1) {
             // 復習タブ - 現在の画面なので何もしない
+            print('[ReviewScreen] Same tab, ignoring');
             return;
           }
-          // その他のタブは前の画面に戻る
-          Navigator.pop(context);
+          print('[ReviewScreen] Popping with target tab index: $index');
+          // DailyChallengeScreenまで戻り、タップされたタブのインデックスを返す
+          Navigator.pop(context, {'targetTabIndex': index});
         },
         items: const [
           BottomNavigationBarItem(
