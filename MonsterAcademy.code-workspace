@@ -1,0 +1,25 @@
+{
+    "folders": [
+        {
+            "name": "Flutter App",
+            "path": "./flutter_app"
+        },
+        {
+            "name": "Project Root",
+            "path": "."
+        }
+    ],
+    "settings": {
+        "dart.flutterSdkPath": "./external/flutter",
+        "dart.showInspectorNotificationsForWidgetErrors": false,
+        "files.associations": {
+            "*.dart": "dart"
+        }
+    },
+    "extensions": {
+        "recommendations": [
+            "Dart-Code.flutter",
+            "Dart-Code.dart-code"
+        ]
+    }
+}

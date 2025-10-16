@@ -1,0 +1,91 @@
+# Build directories (all platforms)
+build/
+build_*/
+out/
+
+# Visual Studio
+.vs/
+*.user
+*.vcxproj.user
+*.sln.docstates
+*.suo
+*.cache
+*.log
+
+# Xcode
+*.xcodeproj/xcuserdata/
+*.xcworkspace/xcuserdata/
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+DerivedData/
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.cmake
+
+# Binaries
+*.exe
+*.dll
+*.lib
+*.pdb
+*.ilk
+*.exp
+*.app/
+*.dSYM/
+*.so
+*.a
+
+# Flutter
+flutter_app/.dart_tool/
+flutter_app/build/
+flutter_app/.flutter-plugins
+flutter_app/.flutter-plugins-dependencies
+flutter_app/.packages
+flutter_app/.pub-cache/
+flutter_app/.pub/
+flutter_app/pubspec.lock
+flutter_app/ios/Flutter/Generated.xcconfig
+flutter_app/ios/Runner/GeneratedPluginRegistrant.*
+flutter_app/macos/Flutter/GeneratedPluginRegistrant.swift
+
+# External (Flutter SDK should be downloaded by script)
+external/flutter/
+
+# Platform-specific
+## Windows
+Thumbs.db
+Desktop.ini
+
+## macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+## Linux
+*~
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+
+# Code signing (iOS/macOS)
+*.mobileprovision
+*.p12
+*.cer
+*.certSigningRequest

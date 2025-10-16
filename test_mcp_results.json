@@ -1,0 +1,32 @@
+{
+  "test_timestamp": "2025-08-19T19:41:00Z",
+  "servers": {
+    "cipher": {
+      "status": "enabled",
+      "config_path": ".claude_code_config.json",
+      "command": "/Users/shinichikinuwaki/Desktop/monaka/mcp_env/bin/python",
+      "args": ["tools/mcp/cipher_mcp_server.py", "--mcp"],
+      "import_test": "passed",
+      "description": "Cipher MCP server for retrieving past conversations and design decisions"
+    },
+    "serena": {
+      "status": "enabled", 
+      "config_path": ".claude_code_config.json",
+      "command": "/Users/shinichikinuwaki/Desktop/monaka/mcp_env/bin/python",
+      "args": ["tools/mcp/serena_mcp_server.py"],
+      "import_test": "passed",
+      "description": "Serena MCP server for code modification and execution"
+    }
+  },
+  "configuration": {
+    "config_file": ".claude_code_config.json",
+    "format": "valid JSON",
+    "mcp_servers_defined": 2
+  },
+  "test_results": {
+    "import_tests": "✅ Both servers import successfully",
+    "configuration": "✅ Valid JSON configuration",
+    "python_environment": "✅ mcp_env virtual environment active",
+    "dependencies": "✅ mcp.server module available"
+  }
+}

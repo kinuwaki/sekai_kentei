@@ -1,0 +1,83 @@
+{
+  "total_tests": 15,
+  "passed_tests": 9,
+  "failed_tests": 6,
+  "success_rate": 60.0,
+  "details": [
+    {
+      "test": "設定ファイルの存在",
+      "passed": true,
+      "details": ".claude_code_config.json が見つかりました"
+    },
+    {
+      "test": "mcpServers セクション",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "test": "Cipher 設定",
+      "passed": true,
+      "details": "Command: python"
+    },
+    {
+      "test": "Serena 設定",
+      "passed": true,
+      "details": "Command: python"
+    },
+    {
+      "test": "Cipher サーバーファイル",
+      "passed": false,
+      "details": "cipher_mcp_server.py が見つかりません"
+    },
+    {
+      "test": "Serena サーバーファイル",
+      "passed": false,
+      "details": "serena_mcp_server.py が見つかりません"
+    },
+    {
+      "test": "Python",
+      "passed": true,
+      "details": "Python 3.9.6"
+    },
+    {
+      "test": "MCP パッケージ",
+      "passed": false,
+      "details": "mcp パッケージがインストールされていません"
+    },
+    {
+      "test": "asyncio モジュール",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "test": "json モジュール",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "test": "pathlib モジュール",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "test": "subprocess モジュール",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "test": "ワークフロースクリプト",
+      "passed": false,
+      "details": "cipher_serena_workflow.py が見つかりません"
+    },
+    {
+      "test": "プロンプト例 (cipher_serena_prompts.md)",
+      "passed": false,
+      "details": "cipher_serena_prompts.md が見つかりません"
+    },
+    {
+      "test": "プロンプト例 (cipher_serena_prompts_complete.md)",
+      "passed": false,
+      "details": "cipher_serena_prompts_complete.md が見つかりません"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "name": "flutter-app-qa",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "qa:web": "node qa/chrome-agent.mjs --url http://localhost:5173 --out ./qa_out --width 390 --height 844 --dpr 3 --wait 1200",
+    "qa:fail-on-high": "node qa/chrome-agent.mjs --url http://localhost:5173 --out ./qa_out --width 390 --height 844 --dpr 3 --wait 1200 --max-issues 0"
+  },
+  "devDependencies": {
+    "playwright": "^1.40.0",
+    "yargs": "^17.7.2",
+    "sharp": "^0.33.0"
+  }
+}

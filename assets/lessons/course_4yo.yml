@@ -1,0 +1,63 @@
+# 4歳児向けコース設定
+course_info:
+  name: "４さいコース"
+  level: 1
+  age_target: 4
+
+# レッスン設定
+lessons:
+  # 1日目のレッスン
+  day_1:
+    chie_game:
+      type: "figureOrientation.v1"
+      title: "図形の向き"
+      description: "同じ向きの図形を選んでね"
+      difficulty: 1
+      max_problems: 5
+      time_limit: 60
+
+    kazu_game:
+      type: "counting.v1"
+      title: "数を数えよう"
+      description: "物の数を数えてみよう"
+      difficulty: 1
+      max_problems: 5
+      time_limit: 60
+
+    moji_game:
+      type: "wordGame.v1"
+      title: "ひらがな"
+      description: "ひらがなを覚えよう"
+      difficulty: 1
+      max_problems: 5
+      time_limit: 60
+
+  # 2日目のレッスン
+  day_2:
+    chie_game:
+      type: "shapeMatching.v1"
+      title: "形合わせ"
+      description: "同じ形を見つけよう"
+      difficulty: 1
+      max_problems: 5
+      time_limit: 60
+
+    kazu_game:
+      type: "counting.v1"
+      title: "数を数えよう"
+      description: "物の数を数えてみよう"
+      difficulty: 1
+      max_problems: 5
+      time_limit: 60
+
+    moji_game:
+      type: "writing.v1"
+      title: "文字を書こう"
+      description: "指で文字をなぞってね"
+      difficulty: 1
+      max_problems: 5
+      time_limit: 60
+
+# 現在の進行状況
+current_day: 1
+max_days: 30
