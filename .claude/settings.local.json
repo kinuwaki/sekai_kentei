@@ -141,5 +141,6 @@
   "enabledMcpjsonServers": [
     "cipher",
     "serena"
-  ]
+  ],
+  "enableAllProjectMcpServers": true
 }

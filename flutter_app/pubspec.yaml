@@ -87,6 +87,7 @@ flutter:
     - assets/config.dev.json
     - assets/config.staging.json
     - assets/lessons/
+    - assets/quiz/
     - assets/images/
     - assets/images/menu/
     - assets/images/buttons/

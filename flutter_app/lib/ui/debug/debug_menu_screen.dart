@@ -22,6 +22,7 @@ import '../games/placement_memory_game/placement_memory_screen.dart';
 import '../games/word_fill_game/word_fill_screen.dart';
 import '../games/shiritori_maze_game/shiritori_maze_screen.dart';
 import '../games/janken_game/janken_game_screen.dart';
+import '../games/sekai_kentei_game/sekai_kentei_screen.dart';
 import '../home/landscape_home.dart';
 import '../onboarding/app_initializer.dart';
 import '../../config/app_config.dart';
@@ -422,6 +423,16 @@ class DebugMenuScreen extends StatelessWidget {
                         onPressed: () => Navigator.push(
                           context,
                           MaterialPageRoute(builder: (_) => const ShiritoriMazeScreen()),
+                        ),
+                      ),
+                      _buildGameCard(
+                        context,
+                        title: '世界遺産\nクイズ',
+                        icon: Icons.public,
+                        color: Colors.blue,
+                        onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const SekaiKenteiScreen()),
                         ),
                       ),
                       // 製品版モードでメインメニューへ
