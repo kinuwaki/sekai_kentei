@@ -26,7 +26,8 @@ from PIL import Image
 import io
 
 # パス設定
-SCRIPT_DIR = Path(__file__).parent
+SCRIPT_DIR = Path(__file__).parent.resolve()
+# tools/editor から sekai_kentei へ: .resolve()で絶対パス化
 PROJECT_ROOT = SCRIPT_DIR.parent.parent
 CSV_PATH = PROJECT_ROOT / "flutter_app/assets/quiz/世界遺産検定4級150問.csv"
 JSON_OUTPUT_PATH = PROJECT_ROOT / "flutter_app/assets/quiz/世界遺産検定4級150問.json"
@@ -214,14 +215,6 @@ class QuizEditorWindow(QMainWindow):
         self.question_text.setStyleSheet('font-size: 14px; font-weight: bold;')
         detail_layout.addRow('問題文:', self.question_text)
 
-        # 画像プレビュー（問題文の直後）
-        self.image_label = QLabel('画像プレビュー')
-        self.image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.image_label.setMinimumHeight(250)
-        self.image_label.setMaximumHeight(400)
-        self.image_label.setStyleSheet('border: 2px solid #ccc; background: #f5f5f5; margin: 10px 0;')
-        detail_layout.addRow('', self.image_label)
-
         # 選択肢（ボタン風に表示）
         choices_label = QLabel('回答候補:')
         choices_label.setStyleSheet('font-weight: bold; margin-top: 10px;')
@@ -267,6 +260,14 @@ class QuizEditorWindow(QMainWindow):
             border-radius: 8px;
         ''')
         detail_layout.addRow('✓ 正解:', self.correct_edit)
+
+        # 画像プレビュー（正解と解説の間）
+        self.image_label = QLabel('画像プレビュー')
+        self.image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.image_label.setMinimumHeight(250)
+        self.image_label.setMaximumHeight(400)
+        self.image_label.setStyleSheet('border: 2px solid #ccc; background: #f5f5f5; margin: 10px 0;')
+        detail_layout.addRow('', self.image_label)
 
         # 解説
         self.explanation_text = QTextEdit()
@@ -626,6 +627,15 @@ class QuizEditorWindow(QMainWindow):
 
 
 def main():
+    # パス情報をデバッグ出力
+    print(f'[DEBUG] SCRIPT_DIR: {SCRIPT_DIR}')
+    print(f'[DEBUG] PROJECT_ROOT: {PROJECT_ROOT}')
+    print(f'[DEBUG] IMAGE_DIR: {IMAGE_DIR}')
+    print(f'[DEBUG] IMAGE_DIR exists: {IMAGE_DIR.exists()}')
+    if IMAGE_DIR.exists():
+        images = list(IMAGE_DIR.glob('*.jpg'))
+        print(f'[DEBUG] Local images found: {len(images)}')
+
     app = QApplication(sys.argv)
     window = QuizEditorWindow()
     window.show()
