@@ -274,6 +274,7 @@ as int,
 /// @nodoc
 mixin _$SekaiKenteiProblem {
 
+ String get id;// 問題ID（CSV/JSONのid）
  String get question;// 問題文
  List<String> get options;// 選択肢（4つ）
  int get correctIndex;// 正解のインデックス
@@ -288,16 +289,16 @@ $SekaiKenteiProblemCopyWith<SekaiKenteiProblem> get copyWith => _$SekaiKenteiPro
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SekaiKenteiProblem&&(identical(other.question, question) || other.question == question)&&const DeepCollectionEquality().equals(other.options, options)&&(identical(other.correctIndex, correctIndex) || other.correctIndex == correctIndex)&&(identical(other.explanation, explanation) || other.explanation == explanation));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SekaiKenteiProblem&&(identical(other.id, id) || other.id == id)&&(identical(other.question, question) || other.question == question)&&const DeepCollectionEquality().equals(other.options, options)&&(identical(other.correctIndex, correctIndex) || other.correctIndex == correctIndex)&&(identical(other.explanation, explanation) || other.explanation == explanation));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,question,const DeepCollectionEquality().hash(options),correctIndex,explanation);
+int get hashCode => Object.hash(runtimeType,id,question,const DeepCollectionEquality().hash(options),correctIndex,explanation);
 
 @override
 String toString() {
-  return 'SekaiKenteiProblem(question: $question, options: $options, correctIndex: $correctIndex, explanation: $explanation)';
+  return 'SekaiKenteiProblem(id: $id, question: $question, options: $options, correctIndex: $correctIndex, explanation: $explanation)';
 }
 
 
@@ -308,7 +309,7 @@ abstract mixin class $SekaiKenteiProblemCopyWith<$Res>  {
   factory $SekaiKenteiProblemCopyWith(SekaiKenteiProblem value, $Res Function(SekaiKenteiProblem) _then) = _$SekaiKenteiProblemCopyWithImpl;
 @useResult
 $Res call({
- String question, List<String> options, int correctIndex, String explanation
+ String id, String question, List<String> options, int correctIndex, String explanation
 });
 
 
@@ -325,9 +326,10 @@ class _$SekaiKenteiProblemCopyWithImpl<$Res>
 
 /// Create a copy of SekaiKenteiProblem
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? question = null,Object? options = null,Object? correctIndex = null,Object? explanation = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? question = null,Object? options = null,Object? correctIndex = null,Object? explanation = null,}) {
   return _then(_self.copyWith(
-question: null == question ? _self.question : question // ignore: cast_nullable_to_non_nullable
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String,question: null == question ? _self.question : question // ignore: cast_nullable_to_non_nullable
 as String,options: null == options ? _self.options : options // ignore: cast_nullable_to_non_nullable
 as List<String>,correctIndex: null == correctIndex ? _self.correctIndex : correctIndex // ignore: cast_nullable_to_non_nullable
 as int,explanation: null == explanation ? _self.explanation : explanation // ignore: cast_nullable_to_non_nullable
@@ -416,10 +418,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String question,  List<String> options,  int correctIndex,  String explanation)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String question,  List<String> options,  int correctIndex,  String explanation)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _SekaiKenteiProblem() when $default != null:
-return $default(_that.question,_that.options,_that.correctIndex,_that.explanation);case _:
+return $default(_that.id,_that.question,_that.options,_that.correctIndex,_that.explanation);case _:
   return orElse();
 
 }
@@ -437,10 +439,10 @@ return $default(_that.question,_that.options,_that.correctIndex,_that.explanatio
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String question,  List<String> options,  int correctIndex,  String explanation)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String question,  List<String> options,  int correctIndex,  String explanation)  $default,) {final _that = this;
 switch (_that) {
 case _SekaiKenteiProblem():
-return $default(_that.question,_that.options,_that.correctIndex,_that.explanation);case _:
+return $default(_that.id,_that.question,_that.options,_that.correctIndex,_that.explanation);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -457,10 +459,10 @@ return $default(_that.question,_that.options,_that.correctIndex,_that.explanatio
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String question,  List<String> options,  int correctIndex,  String explanation)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String question,  List<String> options,  int correctIndex,  String explanation)?  $default,) {final _that = this;
 switch (_that) {
 case _SekaiKenteiProblem() when $default != null:
-return $default(_that.question,_that.options,_that.correctIndex,_that.explanation);case _:
+return $default(_that.id,_that.question,_that.options,_that.correctIndex,_that.explanation);case _:
   return null;
 
 }
@@ -472,9 +474,11 @@ return $default(_that.question,_that.options,_that.correctIndex,_that.explanatio
 
 
 class _SekaiKenteiProblem extends SekaiKenteiProblem {
-  const _SekaiKenteiProblem({required this.question, required final  List<String> options, required this.correctIndex, this.explanation = ''}): _options = options,super._();
+  const _SekaiKenteiProblem({required this.id, required this.question, required final  List<String> options, required this.correctIndex, this.explanation = ''}): _options = options,super._();
   
 
+@override final  String id;
+// 問題ID（CSV/JSONのid）
 @override final  String question;
 // 問題文
  final  List<String> _options;
@@ -500,16 +504,16 @@ _$SekaiKenteiProblemCopyWith<_SekaiKenteiProblem> get copyWith => __$SekaiKentei
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SekaiKenteiProblem&&(identical(other.question, question) || other.question == question)&&const DeepCollectionEquality().equals(other._options, _options)&&(identical(other.correctIndex, correctIndex) || other.correctIndex == correctIndex)&&(identical(other.explanation, explanation) || other.explanation == explanation));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SekaiKenteiProblem&&(identical(other.id, id) || other.id == id)&&(identical(other.question, question) || other.question == question)&&const DeepCollectionEquality().equals(other._options, _options)&&(identical(other.correctIndex, correctIndex) || other.correctIndex == correctIndex)&&(identical(other.explanation, explanation) || other.explanation == explanation));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,question,const DeepCollectionEquality().hash(_options),correctIndex,explanation);
+int get hashCode => Object.hash(runtimeType,id,question,const DeepCollectionEquality().hash(_options),correctIndex,explanation);
 
 @override
 String toString() {
-  return 'SekaiKenteiProblem(question: $question, options: $options, correctIndex: $correctIndex, explanation: $explanation)';
+  return 'SekaiKenteiProblem(id: $id, question: $question, options: $options, correctIndex: $correctIndex, explanation: $explanation)';
 }
 
 
@@ -520,7 +524,7 @@ abstract mixin class _$SekaiKenteiProblemCopyWith<$Res> implements $SekaiKenteiP
   factory _$SekaiKenteiProblemCopyWith(_SekaiKenteiProblem value, $Res Function(_SekaiKenteiProblem) _then) = __$SekaiKenteiProblemCopyWithImpl;
 @override @useResult
 $Res call({
- String question, List<String> options, int correctIndex, String explanation
+ String id, String question, List<String> options, int correctIndex, String explanation
 });
 
 
@@ -537,9 +541,10 @@ class __$SekaiKenteiProblemCopyWithImpl<$Res>
 
 /// Create a copy of SekaiKenteiProblem
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? question = null,Object? options = null,Object? correctIndex = null,Object? explanation = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? question = null,Object? options = null,Object? correctIndex = null,Object? explanation = null,}) {
   return _then(_SekaiKenteiProblem(
-question: null == question ? _self.question : question // ignore: cast_nullable_to_non_nullable
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String,question: null == question ? _self.question : question // ignore: cast_nullable_to_non_nullable
 as String,options: null == options ? _self._options : options // ignore: cast_nullable_to_non_nullable
 as List<String>,correctIndex: null == correctIndex ? _self.correctIndex : correctIndex // ignore: cast_nullable_to_non_nullable
 as int,explanation: null == explanation ? _self.explanation : explanation // ignore: cast_nullable_to_non_nullable

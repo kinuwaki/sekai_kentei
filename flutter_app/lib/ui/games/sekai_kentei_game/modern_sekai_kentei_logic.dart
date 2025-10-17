@@ -31,14 +31,29 @@ class ModernSekaiKenteiLogic extends StateNotifier<SekaiKenteiState> {
     try {
       _allQuestions ??= await _csvLoader.loadQuestions();
 
-      // テーマでフィルタリング
-      final themeName = _getThemeName(settings.theme);
-      _currentThemeQuestions = _csvLoader.filterByTheme(_allQuestions!, themeName);
+      // 復習モードの場合、間違えた問題のIDでフィルタリング
+      if (isReviewMode) {
+        final wrongAnswerIds = await WrongAnswerStorage.getWrongAnswerIds();
+        Log.d('復習モード: 間違えた問題ID数 = ${wrongAnswerIds.length}', tag: _tag);
 
-      Log.d('テーマ「$themeName」の問題: ${_currentThemeQuestions!.length}問', tag: _tag);
+        if (wrongAnswerIds.isEmpty) {
+          throw Exception('復習する問題がありません');
+        }
+
+        _currentThemeQuestions = _allQuestions!
+            .where((q) => wrongAnswerIds.contains(q.id))
+            .toList();
+
+        Log.d('復習モード: 読み込んだ問題数 = ${_currentThemeQuestions!.length}', tag: _tag);
+      } else {
+        // 通常モード: テーマでフィルタリング
+        final themeName = _getThemeName(settings.theme);
+        _currentThemeQuestions = _csvLoader.filterByTheme(_allQuestions!, themeName);
+        Log.d('テーマ「$themeName」の問題: ${_currentThemeQuestions!.length}問', tag: _tag);
+      }
 
       if (_currentThemeQuestions!.isEmpty) {
-        throw Exception('テーマ「$themeName」の問題が見つかりませんでした');
+        throw Exception('問題が見つかりませんでした');
       }
 
       final firstProblem = _generateProblem(settings, 0);
@@ -132,8 +147,8 @@ class ModernSekaiKenteiLogic extends StateNotifier<SekaiKenteiState> {
 
       // 復習モードの場合、正解した問題を削除
       if (_isReviewMode) {
-        await WrongAnswerStorage.removeWrongAnswer(problem.question);
-        Log.d('復習モード: 正解した問題を削除しました', tag: _tag);
+        await WrongAnswerStorage.removeWrongAnswer(problem.id);
+        Log.d('復習モード: 正解した問題を削除しました (ID: ${problem.id})', tag: _tag);
       }
     } else {
       // 不正解音を再生
@@ -149,9 +164,8 @@ class ModernSekaiKenteiLogic extends StateNotifier<SekaiKenteiState> {
         ),
       );
 
-      // 間違えた問題を保存
-      final correctAnswer = problem.options[problem.correctIndex];
-      await WrongAnswerStorage.addWrongAnswer(problem.question, correctAnswer);
+      // 間違えた問題を保存（IDベース）
+      await WrongAnswerStorage.addWrongAnswer(problem.id);
     }
 
     // 自動では次に進まない（ユーザーが「次の問題へ」ボタンを押すまで待機）
@@ -230,6 +244,7 @@ class ModernSekaiKenteiLogic extends StateNotifier<SekaiKenteiState> {
     Log.d('問題生成: ${csvQuestion.question}', tag: _tag);
 
     return SekaiKenteiProblem(
+      id: csvQuestion.id,
       question: csvQuestion.question,
       options: options,
       correctIndex: correctIndex,
@@ -247,6 +262,7 @@ class ModernSekaiKenteiLogic extends StateNotifier<SekaiKenteiState> {
     final questionData = shuffledQuestions[questionIndex];
 
     return SekaiKenteiProblem(
+      id: 'fallback_${settings.theme.name}_$questionIndex',
       question: questionData['question'] as String,
       options: List<String>.from(questionData['options'] as List),
       correctIndex: questionData['correctIndex'] as int,

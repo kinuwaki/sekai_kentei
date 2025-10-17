@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../games/main_tab_screen.dart';
 import '../../services/sekai_kentei_csv_loader.dart';
+import '../../services/wrong_answer_storage.dart';
 
 /// アプリ初期化画面
 /// 設定に応じてデバッグメニュー、初回登録、メインメニューに振り分け
@@ -21,6 +22,11 @@ class _AppInitializerState extends ConsumerState<AppInitializer> {
 
   Future<void> _initializeApp() async {
     try {
+      // 旧データからのマイグレーション
+      debugPrint('データマイグレーション実行中...');
+      await WrongAnswerStorage.migrateFromOldFormat();
+      debugPrint('データマイグレーション完了');
+
       // 問題データをプリロード（起動時に一括ロード）
       debugPrint('問題データをプリロード中...');
       final loader = SekaiKenteiCsvLoader();

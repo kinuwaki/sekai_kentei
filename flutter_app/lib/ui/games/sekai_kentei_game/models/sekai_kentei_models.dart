@@ -43,6 +43,7 @@ abstract class SekaiKenteiSettings with _$SekaiKenteiSettings {
 @freezed
 abstract class SekaiKenteiProblem with _$SekaiKenteiProblem {
   const factory SekaiKenteiProblem({
+    required String id,  // 問題ID（CSV/JSONのid）
     required String question,  // 問題文
     required List<String> options,  // 選択肢（4つ）
     required int correctIndex,  // 正解のインデックス

@@ -24,6 +24,9 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
 
   Future<void> _loadWrongAnswerCount() async {
     final count = await WrongAnswerStorage.getWrongAnswerCount();
+    final ids = await WrongAnswerStorage.getWrongAnswerIds();
+    debugPrint('[ReviewScreen] 間違えた問題数: $count');
+    debugPrint('[ReviewScreen] 間違えた問題ID: $ids');
     if (mounted) {
       setState(() {
         _wrongAnswerCount = count;
