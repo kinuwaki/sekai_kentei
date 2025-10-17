@@ -8,6 +8,7 @@ class QuizQuestion {
   final String correctAnswer; // 正解の選択肢
   final String explanation;
   final String theme;
+  final String? imagePath; // 画像パス（任意）
 
   QuizQuestion({
     required this.id,
@@ -16,6 +17,7 @@ class QuizQuestion {
     required this.correctAnswer,
     required this.explanation,
     required this.theme,
+    this.imagePath,
   });
 
   /// 4択の選択肢を生成（不正解3つ + 正解1つをシャッフル）
@@ -45,6 +47,7 @@ class QuizQuestion {
       correctAnswer: json['correctAnswer'] as String,
       explanation: json['explanation'] as String? ?? '',
       theme: json['theme'] as String,
+      imagePath: json['imagePath'] as String?,
     );
   }
 
@@ -57,6 +60,7 @@ class QuizQuestion {
       'correctAnswer': correctAnswer,
       'explanation': explanation,
       'theme': theme,
+      'imagePath': imagePath,
     };
   }
 }

@@ -419,6 +419,35 @@ class _SekaiKenteiScreenState extends BaseGameScreenState<
               ),
             ],
           ),
+
+          // 画像表示（正解と解説の間）
+          if (problem.imagePath != null && problem.imagePath!.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.asset(
+                problem.imagePath!,
+                width: double.infinity,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Center(
+                      child: Text(
+                        '画像を読み込めませんでした',
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+
           const SizedBox(height: 12),
           Text(
             problem.explanation,

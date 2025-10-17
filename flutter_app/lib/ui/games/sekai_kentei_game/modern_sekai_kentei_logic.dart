@@ -264,6 +264,7 @@ class ModernSekaiKenteiLogic extends StateNotifier<SekaiKenteiState> {
       options: options,
       correctIndex: correctIndex,
       explanation: csvQuestion.explanation,
+      imagePath: csvQuestion.imagePath,
     );
   }
 

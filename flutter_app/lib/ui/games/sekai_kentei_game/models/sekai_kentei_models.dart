@@ -48,6 +48,7 @@ abstract class SekaiKenteiProblem with _$SekaiKenteiProblem {
     required List<String> options,  // 選択肢（4つ）
     required int correctIndex,  // 正解のインデックス
     @Default('') String explanation,  // 解説
+    String? imagePath,  // 画像パス（任意）
   }) = _SekaiKenteiProblem;
 
   const SekaiKenteiProblem._();
