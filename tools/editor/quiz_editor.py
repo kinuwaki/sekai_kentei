@@ -336,10 +336,23 @@ class QuizEditorWindow(QMainWindow):
             with open(CSV_PATH, 'r', encoding='utf-8') as f:
                 reader = csv.DictReader(f)
                 for row in reader:
-                    self.questions.append(QuizQuestion(row))
+                    q = QuizQuestion(row)
+
+                    # ローカル画像ファイルがあるかチェック
+                    if not q.image_path:  # imagePathが未設定の場合のみ
+                        local_image = IMAGE_DIR / f'{q.id}.jpg'
+                        if local_image.exists():
+                            q.image_path = f'assets/images/quiz/{q.id}.jpg'
+
+                    self.questions.append(q)
 
             self.update_question_list()
+
+            # 統計情報
+            local_images = sum(1 for q in self.questions if q.image_path)
             print(f'{len(self.questions)}問の問題を読み込みました')
+            if local_images > 0:
+                print(f'  🖼️  ローカル画像: {local_images}件')
 
         except Exception as e:
             import traceback
