@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/debug_logger.dart';
+import '../../../services/quiz_data_loader.dart';
 import '../../../services/sekai_kentei_csv_loader.dart';
 import '../../../services/wrong_answer_storage.dart';
 import '../../../services/audio_service.dart';
@@ -11,13 +12,15 @@ import 'models/sekai_kentei_models.dart';
 class ModernSekaiKenteiLogic extends StateNotifier<SekaiKenteiState> {
   static const String _tag = 'SekaiKenteiLogic';
   final Random _random = Random();
-  final SekaiKenteiCsvLoader _csvLoader = SekaiKenteiCsvLoader();
+  final QuizDataLoader _dataLoader;
 
   List<QuizQuestion>? _allQuestions;
   List<QuizQuestion>? _currentThemeQuestions;
   bool _isReviewMode = false;
 
-  ModernSekaiKenteiLogic() : super(const SekaiKenteiState());
+  ModernSekaiKenteiLogic({QuizDataLoader? dataLoader})
+      : _dataLoader = dataLoader ?? SekaiKenteiCsvLoader(),
+        super(const SekaiKenteiState());
 
   String? get questionText => state.questionText;
   double get progress => state.progress;
@@ -27,9 +30,9 @@ class ModernSekaiKenteiLogic extends StateNotifier<SekaiKenteiState> {
     _isReviewMode = isReviewMode;
     Log.d('ゲーム開始: ${settings.displayName}${isReviewMode ? ' (復習モード)' : ''}', tag: _tag);
 
-    // CSVから問題を読み込む
+    // データローダーから問題を読み込む
     try {
-      _allQuestions ??= await _csvLoader.loadQuestions();
+      _allQuestions ??= await _dataLoader.loadQuestions();
 
       // 復習モードの場合、間違えた問題のIDでフィルタリング
       if (isReviewMode) {
@@ -48,7 +51,7 @@ class ModernSekaiKenteiLogic extends StateNotifier<SekaiKenteiState> {
       } else {
         // 通常モード: テーマでフィルタリング
         final themeName = _getThemeName(settings.theme);
-        _currentThemeQuestions = _csvLoader.filterByTheme(_allQuestions!, themeName);
+        _currentThemeQuestions = _dataLoader.filterByTheme(_allQuestions!, themeName);
         Log.d('テーマ「$themeName」の問題: ${_currentThemeQuestions!.length}問', tag: _tag);
       }
 

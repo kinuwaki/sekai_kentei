@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../core/debug_logger.dart';
-import 'sekai_kentei_csv_loader.dart';
+import 'quiz_data_loader.dart';
 
 /// 間違えた問題を保存・管理するサービス（IDベース）
 class WrongAnswerStorage {

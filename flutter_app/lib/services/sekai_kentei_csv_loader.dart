@@ -2,9 +2,10 @@ import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
 import 'dart:math';
 import '../core/debug_logger.dart';
+import 'quiz_data_loader.dart';
 
 /// 世界遺産検定CSVファイルから問題を読み込むサービス
-class SekaiKenteiCsvLoader {
+class SekaiKenteiCsvLoader implements QuizDataLoader {
   static const String _tag = 'SekaiKenteiCsvLoader';
   static const String _csvPath = 'assets/quiz/世界遺産検定4級150問.csv';
 
@@ -15,6 +16,7 @@ class SekaiKenteiCsvLoader {
   List<QuizQuestion>? _cachedQuestions;
 
   /// CSVファイルから問題を読み込む
+  @override
   Future<List<QuizQuestion>> loadQuestions() async {
     if (_cachedQuestions != null) {
       Log.d('キャッシュから問題を返します', tag: _tag);
@@ -116,12 +118,14 @@ class SekaiKenteiCsvLoader {
   }
 
   /// テーマで問題をフィルタリング
+  @override
   List<QuizQuestion> filterByTheme(List<QuizQuestion> questions, String theme) {
     return questions.where((q) => q.theme == theme).toList();
   }
 
-  /// ランダムに問題を取得
-  List<QuizQuestion> getRandomQuestions(
+  /// ランダムに問題を選択
+  @override
+  List<QuizQuestion> selectRandom(
     List<QuizQuestion> questions,
     int count, {
     Random? random,
@@ -129,42 +133,5 @@ class SekaiKenteiCsvLoader {
     final rng = random ?? Random();
     final shuffled = List<QuizQuestion>.from(questions)..shuffle(rng);
     return shuffled.take(count).toList();
-  }
-}
-
-/// 問題データクラス
-class QuizQuestion {
-  final String id;
-  final String question;
-  final List<String> choices; // 3つの不正解選択肢
-  final String correctAnswer; // 正解の選択肢
-  final String explanation;
-  final String theme;
-
-  QuizQuestion({
-    required this.id,
-    required this.question,
-    required this.choices,
-    required this.correctAnswer,
-    required this.explanation,
-    required this.theme,
-  });
-
-  /// 4択の選択肢を生成（不正解3つ + 正解1つをシャッフル）
-  List<String> generateOptions({Random? random}) {
-    final rng = random ?? Random();
-    final options = [...choices, correctAnswer];
-    options.shuffle(rng);
-    return options;
-  }
-
-  /// 正解のインデックスを取得（シャッフル後の選択肢から）
-  int getCorrectIndex(List<String> shuffledOptions) {
-    return shuffledOptions.indexOf(correctAnswer);
-  }
-
-  @override
-  String toString() {
-    return 'QuizQuestion(id: $id, question: $question, theme: $theme)';
   }
 }
