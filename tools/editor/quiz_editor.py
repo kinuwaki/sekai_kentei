@@ -304,6 +304,14 @@ class QuizEditorWindow(QMainWindow):
         bottom_layout = QHBoxLayout()
         bottom_layout.addStretch()
 
+        download_all_btn = QPushButton('全画像を一括ダウンロード')
+        download_all_btn.clicked.connect(self.download_all_images)
+        download_all_btn.setStyleSheet('''
+            background-color: #FF9500;
+            color: white;
+        ''')
+        bottom_layout.addWidget(download_all_btn)
+
         reload_btn = QPushButton('CSVをリロード')
         reload_btn.clicked.connect(self.load_csv)
         bottom_layout.addWidget(reload_btn)
@@ -377,7 +385,28 @@ class QuizEditorWindow(QMainWindow):
         self.image_label.setText('画像プレビュー')
 
     def preview_image(self):
-        """Google Drive画像をプレビュー"""
+        """画像をプレビュー（ローカル優先、なければGoogle Drive）"""
+        q = self.questions[self.current_question_index]
+
+        # ローカル画像があればそれを使う
+        if q.image_path:
+            local_path = PROJECT_ROOT / 'flutter_app' / q.image_path.replace('assets/', '')
+            if local_path.exists():
+                try:
+                    image = Image.open(local_path)
+                    image.thumbnail((400, 400), Image.Resampling.LANCZOS)
+
+                    temp_path = Path('/tmp/preview_image.jpg')
+                    image.save(temp_path, 'JPEG')
+
+                    pixmap = QPixmap(str(temp_path))
+                    self.image_label.setPixmap(pixmap)
+                    print(f'ローカル画像プレビュー: {local_path}')
+                    return
+                except Exception as e:
+                    print(f'ローカル画像読み込みエラー: {e}')
+
+        # ローカルになければGoogle Driveから
         url = self.image_url_edit.text().strip()
         if not url:
             self.image_label.setText('画像URLを入力してください')
@@ -385,29 +414,22 @@ class QuizEditorWindow(QMainWindow):
 
         try:
             self.image_label.setText('読み込み中...')
-            # Google DriveのダイレクトURLに変換
             direct_url = self.convert_gdrive_url(url)
 
-            # 画像をダウンロード
             with urllib.request.urlopen(direct_url, timeout=10) as response:
                 image_data = response.read()
 
-            # PIL Imageとして開く
             image = Image.open(io.BytesIO(image_data))
-
-            # リサイズ（最大400x400）
             image.thumbnail((400, 400), Image.Resampling.LANCZOS)
 
-            # 一時ファイルに保存してQPixmapで読み込み
             temp_path = Path('/tmp/preview_image.jpg')
             image.save(temp_path, 'JPEG')
 
             pixmap = QPixmap(str(temp_path))
             self.image_label.setPixmap(pixmap)
 
-            # キャッシュに保存
             self.image_cache[self.current_question_index] = image_data
-            print(f'画像プレビュー成功: {url[:50]}...')
+            print(f'Google Drive画像プレビュー: {url[:50]}...')
 
         except Exception as e:
             self.image_label.setText(f'エラー: {str(e)[:50]}...')
@@ -457,6 +479,58 @@ class QuizEditorWindow(QMainWindow):
                 file_id = url.split('/file/d/')[1].split('/')[0]
                 return f'https://drive.google.com/uc?export=download&id={file_id}'
         return url
+
+    def download_all_images(self):
+        """全ての画像を一括ダウンロード"""
+        print('\n=== 全画像一括ダウンロード開始 ===')
+        IMAGE_DIR.mkdir(parents=True, exist_ok=True)
+
+        success_count = 0
+        skip_count = 0
+        error_count = 0
+
+        for i, q in enumerate(self.questions):
+            if not q.image_url or not q.image_url.strip():
+                skip_count += 1
+                continue
+
+            image_filename = f'{q.id}.jpg'
+            image_path = IMAGE_DIR / image_filename
+
+            # 既に存在する場合はスキップ
+            if image_path.exists():
+                print(f'[{i+1}/{len(self.questions)}] スキップ (既存): {q.id}')
+                q.image_path = f'assets/images/quiz/{image_filename}'
+                skip_count += 1
+                continue
+
+            try:
+                print(f'[{i+1}/{len(self.questions)}] ダウンロード中: {q.id}')
+                direct_url = self.convert_gdrive_url(q.image_url)
+
+                with urllib.request.urlopen(direct_url, timeout=15) as response:
+                    image_data = response.read()
+
+                with open(image_path, 'wb') as f:
+                    f.write(image_data)
+
+                q.image_path = f'assets/images/quiz/{image_filename}'
+                success_count += 1
+                print(f'  ✓ 成功: {image_path}')
+
+            except Exception as e:
+                error_count += 1
+                print(f'  ✗ エラー: {q.id} - {e}')
+
+        print(f'\n=== ダウンロード完了 ===')
+        print(f'成功: {success_count}件')
+        print(f'スキップ: {skip_count}件')
+        print(f'エラー: {error_count}件')
+        print(f'合計: {len(self.questions)}問')
+
+        # 現在の問題を再表示して更新
+        if self.questions:
+            self.on_question_select(self.current_question_index)
 
     def export_json(self):
         """JSONファイルにエクスポート"""
