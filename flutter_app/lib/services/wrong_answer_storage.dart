@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../core/debug_logger.dart';
+import 'sekai_kentei_csv_loader.dart';
 
 /// 間違えた問題を保存・管理するサービス（IDベース）
 class WrongAnswerStorage {
@@ -80,17 +81,64 @@ class WrongAnswerStorage {
   }
 
   /// 旧フォーマットから新フォーマットへのマイグレーション
-  static Future<void> migrateFromOldFormat() async {
+  /// allQuestions: 全問題データ（問題文からIDを逆引きするために必要）
+  static Future<void> migrateFromOldFormat(List<QuizQuestion>? allQuestions) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       const oldKey = 'sekai_kentei_wrong_answers';
       final oldData = prefs.getString(oldKey);
 
-      if (oldData != null && oldData.isNotEmpty) {
-        // 旧データが存在する場合はクリアのみ（問題文からIDへの変換は不可能）
-        await prefs.remove(oldKey);
-        Log.d('旧フォーマットのデータをクリアしました', tag: _tag);
+      if (oldData == null || oldData.isEmpty) {
+        Log.d('旧データなし - マイグレーション不要', tag: _tag);
+        return;
       }
+
+      // 旧データをパース
+      final List<dynamic> decoded = jsonDecode(oldData);
+      final oldWrongAnswers = decoded.cast<Map<String, dynamic>>();
+
+      Log.d('旧データ発見: ${oldWrongAnswers.length}件', tag: _tag);
+
+      // allQuestionsがない場合は変換できないのでクリアのみ
+      if (allQuestions == null || allQuestions.isEmpty) {
+        await prefs.remove(oldKey);
+        Log.w('問題データなし - 旧データをクリアのみ', tag: _tag);
+        return;
+      }
+
+      // 問題文からIDを逆引き
+      final convertedIds = <String>[];
+      for (final item in oldWrongAnswers) {
+        final questionText = item['question'] as String?;
+        if (questionText == null) continue;
+
+        // 問題文でマッチング（trim して比較）
+        QuizQuestion? match;
+        try {
+          match = allQuestions.firstWhere(
+            (q) => q.question.trim() == questionText.trim(),
+          );
+        } catch (e) {
+          match = null;
+        }
+
+        if (match != null) {
+          convertedIds.add(match.id);
+          Log.d('変換成功: "$questionText" → ${match.id}', tag: _tag);
+        } else {
+          Log.w('変換失敗（問題が見つからない）: "$questionText"', tag: _tag);
+        }
+      }
+
+      // v2形式で保存
+      if (convertedIds.isNotEmpty) {
+        await prefs.setString(_key, jsonEncode(convertedIds));
+        Log.d('v2形式で保存: ${convertedIds.length}件', tag: _tag);
+      }
+
+      // 旧データを削除
+      await prefs.remove(oldKey);
+      Log.d('マイグレーション完了: ${oldWrongAnswers.length}件 → ${convertedIds.length}件', tag: _tag);
     } catch (e) {
       Log.e('マイグレーションエラー: $e', tag: _tag);
     }

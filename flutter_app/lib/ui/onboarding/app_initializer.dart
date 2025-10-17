@@ -22,16 +22,16 @@ class _AppInitializerState extends ConsumerState<AppInitializer> {
 
   Future<void> _initializeApp() async {
     try {
-      // 旧データからのマイグレーション
-      debugPrint('データマイグレーション実行中...');
-      await WrongAnswerStorage.migrateFromOldFormat();
-      debugPrint('データマイグレーション完了');
-
       // 問題データをプリロード（起動時に一括ロード）
       debugPrint('問題データをプリロード中...');
       final loader = SekaiKenteiCsvLoader();
-      await loader.loadQuestions();
-      debugPrint('問題データのプリロード完了');
+      final allQuestions = await loader.loadQuestions();
+      debugPrint('問題データのプリロード完了: ${allQuestions.length}件');
+
+      // 旧データからのマイグレーション（問題データを使って変換）
+      debugPrint('データマイグレーション実行中...');
+      await WrongAnswerStorage.migrateFromOldFormat(allQuestions);
+      debugPrint('データマイグレーション完了');
 
       // 少し待ってから判定（スプラッシュ的な効果）
       await Future.delayed(const Duration(milliseconds: 300));
