@@ -41,7 +41,7 @@ class ModernSekaiKenteiLogic extends StateNotifier<SekaiKenteiState> {
       // 復習モードの場合、間違えた問題のIDでフィルタリング
       if (isReviewMode) {
         final wrongAnswerIds = await WrongAnswerStorage.getWrongAnswerIds();
-        Log.d('復習モード: 間違えた問題ID数 = ${wrongAnswerIds.length}', tag: _tag);
+        Log.d('📚 [復習モード開始] 保存されている間違えた問題ID: $wrongAnswerIds', tag: _tag);
 
         if (wrongAnswerIds.isEmpty) {
           throw Exception('復習する問題がありません');
@@ -51,7 +51,10 @@ class ModernSekaiKenteiLogic extends StateNotifier<SekaiKenteiState> {
             .where((q) => wrongAnswerIds.contains(q.id))
             .toList();
 
-        Log.d('復習モード: 読み込んだ問題数 = ${_currentThemeQuestions!.length}', tag: _tag);
+        Log.d('📚 [復習モード] マッチした問題数 = ${_currentThemeQuestions!.length}', tag: _tag);
+        for (final q in _currentThemeQuestions!) {
+          Log.d('   - ID=${q.id}, 問題="${q.question}"', tag: _tag);
+        }
       } else {
         // 通常モード: テーマでフィルタリング
         final themeName = _getThemeName(settings.theme);
@@ -154,8 +157,8 @@ class ModernSekaiKenteiLogic extends StateNotifier<SekaiKenteiState> {
 
       // 復習モードの場合、正解した問題を削除
       if (_isReviewMode) {
+        Log.d('🔵 [復習モード] 正解！問題を削除: ID=${problem.id}, 問題="${problem.question}"', tag: _tag);
         await WrongAnswerStorage.removeWrongAnswer(problem.id);
-        Log.d('復習モード: 正解した問題を削除しました (ID: ${problem.id})', tag: _tag);
       }
     } else {
       // 不正解音を再生
@@ -172,7 +175,12 @@ class ModernSekaiKenteiLogic extends StateNotifier<SekaiKenteiState> {
       );
 
       // 間違えた問題を保存（IDベース）
+      Log.d('🔴 [間違えた] 問題を保存: ID=${problem.id}, 問題="${problem.question}"', tag: _tag);
       await WrongAnswerStorage.addWrongAnswer(problem.id);
+
+      // 保存後の確認
+      final savedIds = await WrongAnswerStorage.getWrongAnswerIds();
+      Log.d('📝 現在保存されている間違えた問題ID: $savedIds', tag: _tag);
     }
 
     // 自動では次に進まない（ユーザーが「次の問題へ」ボタンを押すまで待機）
@@ -248,7 +256,7 @@ class ModernSekaiKenteiLogic extends StateNotifier<SekaiKenteiState> {
     final options = csvQuestion.generateOptions(random: _random);
     final correctIndex = csvQuestion.getCorrectIndex(options);
 
-    Log.d('問題生成: ${csvQuestion.question}', tag: _tag);
+    Log.d('✨ 問題生成: ID=${csvQuestion.id}, 問題="${csvQuestion.question}"', tag: _tag);
 
     return SekaiKenteiProblem(
       id: csvQuestion.id,

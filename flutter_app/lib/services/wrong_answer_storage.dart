@@ -14,13 +14,18 @@ class WrongAnswerStorage {
       final prefs = await SharedPreferences.getInstance();
       final wrongAnswerIds = await getWrongAnswerIds();
 
+      Log.d('💾 [追加前] 現在の間違えた問題ID: $wrongAnswerIds', tag: _tag);
+
       // 重複チェック
       if (!wrongAnswerIds.contains(questionId)) {
         wrongAnswerIds.add(questionId);
 
         final jsonString = jsonEncode(wrongAnswerIds);
         await prefs.setString(_key, jsonString);
-        Log.d('間違えた問題を追加: $questionId', tag: _tag);
+        Log.d('💾 [追加] 間違えた問題を追加: $questionId', tag: _tag);
+        Log.d('💾 [追加後] 保存後のID一覧: $wrongAnswerIds', tag: _tag);
+      } else {
+        Log.d('💾 [スキップ] すでに保存済み: $questionId', tag: _tag);
       }
     } catch (e) {
       Log.e('間違えた問題の保存エラー: $e', tag: _tag);
@@ -70,11 +75,19 @@ class WrongAnswerStorage {
       final prefs = await SharedPreferences.getInstance();
       final wrongAnswerIds = await getWrongAnswerIds();
 
-      wrongAnswerIds.remove(questionId);
+      Log.d('🗑️ [削除前] 現在の間違えた問題ID: $wrongAnswerIds', tag: _tag);
+
+      final removed = wrongAnswerIds.remove(questionId);
 
       final jsonString = jsonEncode(wrongAnswerIds);
       await prefs.setString(_key, jsonString);
-      Log.d('間違えた問題を削除: $questionId', tag: _tag);
+
+      if (removed) {
+        Log.d('🗑️ [削除] 間違えた問題を削除: $questionId', tag: _tag);
+        Log.d('🗑️ [削除後] 残りのID一覧: $wrongAnswerIds', tag: _tag);
+      } else {
+        Log.w('🗑️ [削除失敗] 見つからなかった: $questionId', tag: _tag);
+      }
     } catch (e) {
       Log.e('間違えた問題の削除エラー: $e', tag: _tag);
     }
