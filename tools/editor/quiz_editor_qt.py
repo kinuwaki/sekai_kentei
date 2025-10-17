@@ -77,6 +77,40 @@ class QuizEditorWindow(QMainWindow):
 
         # メインウィジェット
         main_widget = QWidget()
+        main_widget.setStyleSheet("""
+            QWidget {
+                background-color: white;
+                color: black;
+            }
+            QListWidget {
+                background-color: white;
+                color: black;
+                border: 1px solid #ccc;
+            }
+            QListWidget::item:selected {
+                background-color: #0078d7;
+                color: white;
+            }
+            QTextEdit, QLineEdit {
+                background-color: white;
+                color: black;
+                border: 1px solid #ccc;
+                padding: 5px;
+            }
+            QPushButton {
+                background-color: #0078d7;
+                color: white;
+                border: none;
+                padding: 8px 16px;
+                border-radius: 4px;
+            }
+            QPushButton:hover {
+                background-color: #005a9e;
+            }
+            QLabel {
+                color: black;
+            }
+        """)
         self.setCentralWidget(main_widget)
         main_layout = QHBoxLayout(main_widget)
 
@@ -138,21 +172,38 @@ class QuizEditorWindow(QMainWindow):
 
         # 問題文
         self.question_text = QTextEdit()
-        self.question_text.setMaximumHeight(100)
+        self.question_text.setMaximumHeight(120)
+        self.question_text.setStyleSheet('font-size: 14px; font-weight: bold;')
         detail_layout.addRow('問題文:', self.question_text)
 
-        # 選択肢
+        # 画像プレビュー（問題文の直後）
+        self.image_label = QLabel('画像プレビュー')
+        self.image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.image_label.setMinimumHeight(250)
+        self.image_label.setMaximumHeight(400)
+        self.image_label.setStyleSheet('border: 2px solid #ccc; background: #f5f5f5; margin: 10px 0;')
+        detail_layout.addRow('', self.image_label)
+
+        # 選択肢（ボタン風に表示）
+        choices_label = QLabel('回答候補:')
+        choices_label.setStyleSheet('font-weight: bold; margin-top: 10px;')
+        detail_layout.addRow(choices_label)
+
         self.choice1_edit = QLineEdit()
-        detail_layout.addRow('不正解1:', self.choice1_edit)
+        self.choice1_edit.setStyleSheet('background-color: #e3f2fd; padding: 10px; font-size: 13px;')
+        detail_layout.addRow('①', self.choice1_edit)
 
         self.choice2_edit = QLineEdit()
-        detail_layout.addRow('不正解2:', self.choice2_edit)
+        self.choice2_edit.setStyleSheet('background-color: #e3f2fd; padding: 10px; font-size: 13px;')
+        detail_layout.addRow('②', self.choice2_edit)
 
         self.choice3_edit = QLineEdit()
-        detail_layout.addRow('不正解3:', self.choice3_edit)
+        self.choice3_edit.setStyleSheet('background-color: #e3f2fd; padding: 10px; font-size: 13px;')
+        detail_layout.addRow('③', self.choice3_edit)
 
         self.correct_edit = QLineEdit()
-        detail_layout.addRow('正解:', self.correct_edit)
+        self.correct_edit.setStyleSheet('background-color: #c8e6c9; padding: 10px; font-size: 13px; font-weight: bold;')
+        detail_layout.addRow('✓ 正解:', self.correct_edit)
 
         # 解説
         self.explanation_text = QTextEdit()
@@ -175,13 +226,6 @@ class QuizEditorWindow(QMainWindow):
 
         btn_layout.addStretch()
         detail_layout.addRow('', btn_layout)
-
-        # 画像プレビュー
-        self.image_label = QLabel('画像プレビュー')
-        self.image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.image_label.setMinimumHeight(300)
-        self.image_label.setStyleSheet('border: 1px solid #ccc; background: #f5f5f5;')
-        detail_layout.addRow('', self.image_label)
 
         # ローカル画像パス
         self.image_path_label = QLabel('未設定')
