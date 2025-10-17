@@ -44,7 +44,8 @@ class QuizQuestion:
         self.correct_answer = data.get('correctAnswer', '')
         self.explanation = data.get('explanation', '')
         self.theme = data.get('theme', '')
-        self.image_url = data.get('imageUrl', '')
+        # 'img'カラムまたは'imageUrl'カラムから読み込み
+        self.image_url = data.get('img', '') or data.get('imageUrl', '')
         self.image_path = data.get('imagePath', '')
 
     def to_dict(self):
