@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../games/main_tab_screen.dart';
-import '../../services/sekai_kentei_csv_loader.dart';
+import '../../services/sekai_kentei_json_loader.dart';
 import '../../services/wrong_answer_storage.dart';
 
 /// アプリ初期化画面
@@ -24,7 +24,7 @@ class _AppInitializerState extends ConsumerState<AppInitializer> {
     try {
       // 問題データをプリロード（起動時に一括ロード）
       debugPrint('問題データをプリロード中...');
-      final loader = SekaiKenteiCsvLoader();
+      final loader = SekaiKenteiJsonLoader();
       final allQuestions = await loader.loadQuestions();
       debugPrint('問題データのプリロード完了: ${allQuestions.length}件');
 
