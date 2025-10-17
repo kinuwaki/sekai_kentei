@@ -66,8 +66,11 @@ class QuizEditorApp:
         self.current_question_index = 0
         self.image_cache = {}
 
+        print("Initializing UI...")
         self.setup_ui()
+        print("Loading CSV...")
         self.load_csv()
+        print("Initialization complete!")
 
     def setup_ui(self):
         """UI構築"""
@@ -205,6 +208,10 @@ class QuizEditorApp:
     def load_csv(self):
         """CSVファイルを読み込む"""
         try:
+            if not CSV_PATH.exists():
+                messagebox.showerror("エラー", f"CSVファイルが見つかりません:\n{CSV_PATH}")
+                return
+
             self.questions = []
             with open(CSV_PATH, 'r', encoding='utf-8') as f:
                 reader = csv.DictReader(f)
@@ -212,9 +219,14 @@ class QuizEditorApp:
                     self.questions.append(QuizQuestion(row))
 
             self.update_question_list()
-            messagebox.showinfo("成功", f"{len(self.questions)}問の問題を読み込みました")
+            if self.questions:
+                messagebox.showinfo("成功", f"{len(self.questions)}問の問題を読み込みました")
+            else:
+                messagebox.showwarning("警告", "問題が0件です")
         except Exception as e:
-            messagebox.showerror("エラー", f"CSVの読み込みに失敗しました:\n{e}")
+            import traceback
+            error_detail = traceback.format_exc()
+            messagebox.showerror("エラー", f"CSVの読み込みに失敗しました:\n{e}\n\n{error_detail}")
 
     def update_question_list(self):
         """問題一覧を更新"""
