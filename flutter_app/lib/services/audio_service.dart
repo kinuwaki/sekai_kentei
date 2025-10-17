@@ -1,13 +1,16 @@
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/debug_logger.dart';
 
-/// 音声再生サービス
+/// 音声再生サービス（Riverpod管理）
 class AudioService {
   static const String _tag = 'AudioService';
-  static final AudioPlayer _player = AudioPlayer();
+  final AudioPlayer _player;
+
+  AudioService() : _player = AudioPlayer();
 
   /// 正解音を再生
-  static Future<void> playCorrect() async {
+  Future<void> playCorrect() async {
     try {
       await _player.stop();
       await _player.play(AssetSource('audio/pinpon.mp3'));
@@ -18,7 +21,7 @@ class AudioService {
   }
 
   /// 不正解音を再生
-  static Future<void> playIncorrect() async {
+  Future<void> playIncorrect() async {
     try {
       await _player.stop();
       await _player.play(AssetSource('audio/buzzer.mp3'));
@@ -29,7 +32,16 @@ class AudioService {
   }
 
   /// 音声プレイヤーを破棄
-  static Future<void> dispose() async {
+  Future<void> dispose() async {
     await _player.dispose();
   }
 }
+
+/// AudioService Provider
+final audioServiceProvider = Provider<AudioService>((ref) {
+  final service = AudioService();
+  ref.onDispose(() {
+    service.dispose();
+  });
+  return service;
+});

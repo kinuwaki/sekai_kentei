@@ -13,13 +13,17 @@ class ModernSekaiKenteiLogic extends StateNotifier<SekaiKenteiState> {
   static const String _tag = 'SekaiKenteiLogic';
   final Random _random = Random();
   final QuizDataLoader _dataLoader;
+  final AudioService _audioService;
 
   List<QuizQuestion>? _allQuestions;
   List<QuizQuestion>? _currentThemeQuestions;
   bool _isReviewMode = false;
 
-  ModernSekaiKenteiLogic({QuizDataLoader? dataLoader})
-      : _dataLoader = dataLoader ?? SekaiKenteiCsvLoader(),
+  ModernSekaiKenteiLogic({
+    QuizDataLoader? dataLoader,
+    required AudioService audioService,
+  })  : _dataLoader = dataLoader ?? SekaiKenteiCsvLoader(),
+        _audioService = audioService,
         super(const SekaiKenteiState());
 
   String? get questionText => state.questionText;
@@ -139,7 +143,7 @@ class ModernSekaiKenteiLogic extends StateNotifier<SekaiKenteiState> {
 
     if (isCorrect) {
       // 正解音を再生
-      await AudioService.playCorrect();
+      await _audioService.playCorrect();
 
       updatedResults[session.index] = result.isPerfect;
       state = state.copyWith(
@@ -155,7 +159,7 @@ class ModernSekaiKenteiLogic extends StateNotifier<SekaiKenteiState> {
       }
     } else {
       // 不正解音を再生
-      await AudioService.playIncorrect();
+      await _audioService.playIncorrect();
 
       updatedResults[session.index] = false;
       state = state.copyWith(
@@ -292,5 +296,6 @@ class ModernSekaiKenteiLogic extends StateNotifier<SekaiKenteiState> {
 }
 
 final modernSekaiKenteiLogicProvider = StateNotifierProvider.autoDispose<ModernSekaiKenteiLogic, SekaiKenteiState>((ref) {
-  return ModernSekaiKenteiLogic();
+  final audioService = ref.watch(audioServiceProvider);
+  return ModernSekaiKenteiLogic(audioService: audioService);
 });
