@@ -255,6 +255,11 @@ class _SekaiKenteiScreenState extends BaseGameScreenState<
     final session = state.session!;
     final showResult = state.phase == CommonGamePhase.feedbackOk || state.phase == CommonGamePhase.feedbackNg;
 
+    // 問題表示時に画像を事前読み込み
+    if (problem.imagePath != null && problem.imagePath!.isNotEmpty) {
+      precacheImage(AssetImage(problem.imagePath!), context);
+    }
+
     return Container(
       width: double.infinity,
       height: double.infinity,
