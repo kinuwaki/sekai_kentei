@@ -483,30 +483,46 @@ class QuizEditorWindow(QMainWindow):
 
     def download_all_images(self):
         """全ての画像を一括ダウンロード"""
-        print('\n=== 全画像一括ダウンロード開始 ===')
+        import sys
+
+        # 画像URLがある問題のみカウント
+        total_with_url = sum(1 for q in self.questions if q.image_url and q.image_url.strip())
+
+        print('\n' + '='*60)
+        print(f'  全画像一括ダウンロード開始')
+        print(f'  対象: {total_with_url}件 / 全{len(self.questions)}問')
+        print('='*60)
+
         IMAGE_DIR.mkdir(parents=True, exist_ok=True)
 
         success_count = 0
         skip_count = 0
         error_count = 0
+        download_index = 0
 
         for i, q in enumerate(self.questions):
             if not q.image_url or not q.image_url.strip():
-                skip_count += 1
                 continue
 
+            download_index += 1
             image_filename = f'{q.id}.jpg'
             image_path = IMAGE_DIR / image_filename
 
+            # プログレスバー表示
+            percentage = int((download_index / total_with_url) * 100)
+            bar_length = 40
+            filled = int((bar_length * download_index) / total_with_url)
+            bar = '█' * filled + '░' * (bar_length - filled)
+
             # 既に存在する場合はスキップ
             if image_path.exists():
-                print(f'[{i+1}/{len(self.questions)}] スキップ (既存): {q.id}')
-                q.image_path = f'assets/images/quiz/{image_filename}'
                 skip_count += 1
+                q.image_path = f'assets/images/quiz/{image_filename}'
+                print(f'\r[{download_index}/{total_with_url}] {bar} {percentage}% | ⏭️  スキップ: {q.id}', end='', flush=True)
                 continue
 
             try:
-                print(f'[{i+1}/{len(self.questions)}] ダウンロード中: {q.id}')
+                print(f'\r[{download_index}/{total_with_url}] {bar} {percentage}% | ⬇️  {q.id}...', end='', flush=True)
                 direct_url = self.convert_gdrive_url(q.image_url)
 
                 with urllib.request.urlopen(direct_url, timeout=15) as response:
@@ -517,17 +533,19 @@ class QuizEditorWindow(QMainWindow):
 
                 q.image_path = f'assets/images/quiz/{image_filename}'
                 success_count += 1
-                print(f'  ✓ 成功: {image_path}')
+                print(f'\r[{download_index}/{total_with_url}] {bar} {percentage}% | ✅ 成功: {q.id}' + ' '*20)
 
             except Exception as e:
                 error_count += 1
-                print(f'  ✗ エラー: {q.id} - {e}')
+                print(f'\r[{download_index}/{total_with_url}] {bar} {percentage}% | ❌ エラー: {q.id} - {str(e)[:30]}' + ' '*20)
 
-        print(f'\n=== ダウンロード完了 ===')
-        print(f'成功: {success_count}件')
-        print(f'スキップ: {skip_count}件')
-        print(f'エラー: {error_count}件')
-        print(f'合計: {len(self.questions)}問')
+        print('\n' + '='*60)
+        print(f'  ダウンロード完了！')
+        print(f'  ✅ 成功: {success_count}件')
+        print(f'  ⏭️  スキップ: {skip_count}件')
+        print(f'  ❌ エラー: {error_count}件')
+        print(f'  📊 合計: {total_with_url}件 / 全{len(self.questions)}問')
+        print('='*60)
 
         # 現在の問題を再表示して更新
         if self.questions:
