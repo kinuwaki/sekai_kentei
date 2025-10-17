@@ -79,7 +79,7 @@ class QuizEditorWindow(QMainWindow):
     def init_ui(self):
         """UI初期化"""
         self.setWindowTitle('世界遺産検定4級 問題エディター')
-        self.setGeometry(100, 100, 2100, 900)
+        self.setGeometry(100, 100, 1800, 1000)
 
         # メインウィジェット
         main_widget = QWidget()
@@ -165,8 +165,8 @@ class QuizEditorWindow(QMainWindow):
         right_widget = self.create_right_panel()
         splitter.addWidget(right_widget)
 
-        splitter.setStretchFactor(0, 1)
-        splitter.setStretchFactor(1, 8)
+        splitter.setStretchFactor(0, 2)
+        splitter.setStretchFactor(1, 5)
 
     def create_left_panel(self):
         """左パネル作成"""
