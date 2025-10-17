@@ -65,6 +65,22 @@ class _SekaiKenteiScreenState extends BaseGameScreenState<
   }
 
   @override
+  void initializeGame() {
+    super.initializeGame();
+    // 復習モードの場合、isReviewMode=trueでゲームを開始
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && widget.initialSettings != null) {
+        final logic = readLogic(ref);
+        logic.resetGame();
+        logic.startGame(
+          widget.initialSettings!,
+          isReviewMode: widget.mode == QuizMode.review,
+        );
+      }
+    });
+  }
+
+  @override
   void dispose() {
     _testTimer?.cancel();
     super.dispose();
