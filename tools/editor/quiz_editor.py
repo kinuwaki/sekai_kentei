@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-世界遺産検定4級 問題エディター
+世界遺産検定4級 問題エディター (PyQt6版)
 
 機能:
 - CSVファイルを読み込み
@@ -10,15 +10,19 @@
 - JSONファイルにエクスポート
 """
 
+import sys
 import csv
 import json
-import os
-import tkinter as tk
-from tkinter import ttk, messagebox, filedialog
 from pathlib import Path
 import urllib.request
-import urllib.parse
-from PIL import Image, ImageTk
+from PyQt6.QtWidgets import (
+    QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
+    QSplitter, QListWidget, QLabel, QTextEdit, QLineEdit, QPushButton,
+    QGroupBox, QFormLayout, QMessageBox, QScrollArea
+)
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QPixmap
+from PIL import Image
 import io
 
 # パス設定
@@ -40,8 +44,8 @@ class QuizQuestion:
         self.correct_answer = data.get('correctAnswer', '')
         self.explanation = data.get('explanation', '')
         self.theme = data.get('theme', '')
-        self.image_url = data.get('imageUrl', '')  # 新規追加フィールド
-        self.image_path = data.get('imagePath', '')  # ローカル画像パス
+        self.image_url = data.get('imageUrl', '')
+        self.image_path = data.get('imagePath', '')
 
     def to_dict(self):
         """JSON用の辞書に変換"""
@@ -56,160 +60,267 @@ class QuizQuestion:
         }
 
 
-class QuizEditorApp:
-    def __init__(self, root):
-        self.root = root
-        self.root.title("世界遺産検定4級 問題エディター")
-        self.root.geometry("1400x900")
-
+class QuizEditorWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        print("Initializing QuizEditorWindow...")
         self.questions = []
         self.current_question_index = 0
         self.image_cache = {}
 
-        print("Initializing UI...")
-        self.setup_ui()
+        print("Setting up UI...")
+        self.init_ui()
         print("Loading CSV...")
         self.load_csv()
         print("Initialization complete!")
 
-    def setup_ui(self):
-        """UI構築"""
-        # メインコンテナ
-        main_paned = ttk.PanedWindow(self.root, orient=tk.HORIZONTAL)
-        main_paned.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+    def init_ui(self):
+        """UI初期化"""
+        self.setWindowTitle('世界遺産検定4級 問題エディター')
+        self.setGeometry(100, 100, 1400, 900)
+
+        # メインウィジェット
+        main_widget = QWidget()
+        main_widget.setStyleSheet("""
+            QWidget {
+                background-color: #f8f9fa;
+                color: #212529;
+                font-family: "SF Pro", "Segoe UI", sans-serif;
+            }
+            QListWidget {
+                background-color: white;
+                color: #212529;
+                border: 1px solid #dee2e6;
+                border-radius: 8px;
+                padding: 4px;
+                font-size: 13px;
+            }
+            QListWidget::item {
+                padding: 10px;
+                border-radius: 6px;
+                margin: 2px 0;
+            }
+            QListWidget::item:hover {
+                background-color: #f1f3f5;
+            }
+            QListWidget::item:selected {
+                background-color: #007AFF;
+                color: white;
+            }
+            QTextEdit, QLineEdit {
+                background-color: white;
+                color: #212529;
+                border: 1px solid #dee2e6;
+                border-radius: 6px;
+                padding: 8px;
+                font-size: 13px;
+            }
+            QTextEdit:focus, QLineEdit:focus {
+                border: 2px solid #007AFF;
+            }
+            QPushButton {
+                background-color: #007AFF;
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 8px;
+                font-size: 13px;
+                font-weight: 500;
+            }
+            QPushButton:hover {
+                background-color: #0051D5;
+            }
+            QPushButton:pressed {
+                background-color: #003D99;
+            }
+            QLabel {
+                color: #212529;
+            }
+            QGroupBox {
+                background-color: white;
+                border: 1px solid #dee2e6;
+                border-radius: 10px;
+                margin-top: 10px;
+                padding: 20px;
+                font-weight: 600;
+            }
+            QGroupBox::title {
+                color: #212529;
+            }
+        """)
+        self.setCentralWidget(main_widget)
+        main_layout = QHBoxLayout(main_widget)
+
+        # スプリッター
+        splitter = QSplitter(Qt.Orientation.Horizontal)
+        main_layout.addWidget(splitter)
 
         # 左パネル: 問題一覧
-        left_frame = ttk.Frame(main_paned, width=400)
-        main_paned.add(left_frame, weight=1)
-
-        ttk.Label(left_frame, text="問題一覧", font=('', 14, 'bold')).pack(pady=5)
-
-        # 問題リスト
-        list_frame = ttk.Frame(left_frame)
-        list_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
-
-        scrollbar = ttk.Scrollbar(list_frame)
-        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-
-        self.question_listbox = tk.Listbox(
-            list_frame,
-            yscrollcommand=scrollbar.set,
-            font=('', 10),
-            selectmode=tk.SINGLE
-        )
-        self.question_listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        scrollbar.config(command=self.question_listbox.yview)
-        self.question_listbox.bind('<<ListboxSelect>>', self.on_question_select)
+        left_widget = self.create_left_panel()
+        splitter.addWidget(left_widget)
 
         # 右パネル: 問題詳細
-        right_frame = ttk.Frame(main_paned)
-        main_paned.add(right_frame, weight=3)
+        right_widget = self.create_right_panel()
+        splitter.addWidget(right_widget)
 
-        # 問題詳細エリア
-        detail_frame = ttk.LabelFrame(right_frame, text="問題詳細", padding=10)
-        detail_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+        splitter.setStretchFactor(0, 1)
+        splitter.setStretchFactor(1, 3)
 
-        # スクロール可能なフレーム
-        canvas = tk.Canvas(detail_frame)
-        scrollbar_detail = ttk.Scrollbar(detail_frame, orient="vertical", command=canvas.yview)
-        scrollable_frame = ttk.Frame(canvas)
+    def create_left_panel(self):
+        """左パネル作成"""
+        widget = QWidget()
+        layout = QVBoxLayout(widget)
 
-        scrollable_frame.bind(
-            "<Configure>",
-            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
-        )
+        # タイトル
+        title = QLabel('問題一覧')
+        title.setStyleSheet('font-size: 16px; font-weight: bold;')
+        layout.addWidget(title)
 
-        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
-        canvas.configure(yscrollcommand=scrollbar_detail.set)
+        # 問題リスト
+        self.question_list = QListWidget()
+        self.question_list.currentRowChanged.connect(self.on_question_select)
+        layout.addWidget(self.question_list)
 
-        canvas.pack(side="left", fill="both", expand=True)
-        scrollbar_detail.pack(side="right", fill="y")
+        return widget
 
-        # 詳細フィールド
-        row = 0
+    def create_right_panel(self):
+        """右パネル作成"""
+        widget = QWidget()
+        layout = QVBoxLayout(widget)
+
+        # スクロールエリア
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll_content = QWidget()
+        scroll_layout = QVBoxLayout(scroll_content)
+
+        # 問題詳細グループ
+        detail_group = QGroupBox('問題詳細')
+        detail_layout = QFormLayout()
 
         # ID
-        ttk.Label(scrollable_frame, text="ID:").grid(row=row, column=0, sticky=tk.W, pady=2)
-        self.id_label = ttk.Label(scrollable_frame, text="", font=('', 10, 'bold'))
-        self.id_label.grid(row=row, column=1, sticky=tk.W, pady=2)
-        row += 1
+        self.id_label = QLabel()
+        self.id_label.setStyleSheet('font-weight: bold;')
+        detail_layout.addRow('ID:', self.id_label)
 
         # テーマ
-        ttk.Label(scrollable_frame, text="テーマ:").grid(row=row, column=0, sticky=tk.W, pady=2)
-        self.theme_label = ttk.Label(scrollable_frame, text="")
-        self.theme_label.grid(row=row, column=1, sticky=tk.W, pady=2)
-        row += 1
+        self.theme_label = QLabel()
+        detail_layout.addRow('テーマ:', self.theme_label)
 
         # 問題文
-        ttk.Label(scrollable_frame, text="問題文:").grid(row=row, column=0, sticky=tk.NW, pady=2)
-        self.question_text = tk.Text(scrollable_frame, height=4, width=60, wrap=tk.WORD)
-        self.question_text.grid(row=row, column=1, sticky=tk.EW, pady=2)
-        row += 1
+        self.question_text = QTextEdit()
+        self.question_text.setMaximumHeight(120)
+        self.question_text.setStyleSheet('font-size: 14px; font-weight: bold;')
+        detail_layout.addRow('問題文:', self.question_text)
 
-        # 選択肢
-        ttk.Label(scrollable_frame, text="不正解1:").grid(row=row, column=0, sticky=tk.W, pady=2)
-        self.choice1_entry = ttk.Entry(scrollable_frame, width=60)
-        self.choice1_entry.grid(row=row, column=1, sticky=tk.EW, pady=2)
-        row += 1
+        # 画像プレビュー（問題文の直後）
+        self.image_label = QLabel('画像プレビュー')
+        self.image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.image_label.setMinimumHeight(250)
+        self.image_label.setMaximumHeight(400)
+        self.image_label.setStyleSheet('border: 2px solid #ccc; background: #f5f5f5; margin: 10px 0;')
+        detail_layout.addRow('', self.image_label)
 
-        ttk.Label(scrollable_frame, text="不正解2:").grid(row=row, column=0, sticky=tk.W, pady=2)
-        self.choice2_entry = ttk.Entry(scrollable_frame, width=60)
-        self.choice2_entry.grid(row=row, column=1, sticky=tk.EW, pady=2)
-        row += 1
+        # 選択肢（ボタン風に表示）
+        choices_label = QLabel('回答候補:')
+        choices_label.setStyleSheet('font-weight: bold; margin-top: 10px;')
+        detail_layout.addRow(choices_label)
 
-        ttk.Label(scrollable_frame, text="不正解3:").grid(row=row, column=0, sticky=tk.W, pady=2)
-        self.choice3_entry = ttk.Entry(scrollable_frame, width=60)
-        self.choice3_entry.grid(row=row, column=1, sticky=tk.EW, pady=2)
-        row += 1
+        self.choice1_edit = QLineEdit()
+        self.choice1_edit.setStyleSheet('''
+            background-color: #E8F4FD;
+            border: 2px solid #90CAF9;
+            padding: 12px;
+            font-size: 14px;
+            border-radius: 8px;
+        ''')
+        detail_layout.addRow('①', self.choice1_edit)
 
-        ttk.Label(scrollable_frame, text="正解:").grid(row=row, column=0, sticky=tk.W, pady=2)
-        self.correct_entry = ttk.Entry(scrollable_frame, width=60)
-        self.correct_entry.grid(row=row, column=1, sticky=tk.EW, pady=2)
-        row += 1
+        self.choice2_edit = QLineEdit()
+        self.choice2_edit.setStyleSheet('''
+            background-color: #E8F4FD;
+            border: 2px solid #90CAF9;
+            padding: 12px;
+            font-size: 14px;
+            border-radius: 8px;
+        ''')
+        detail_layout.addRow('②', self.choice2_edit)
+
+        self.choice3_edit = QLineEdit()
+        self.choice3_edit.setStyleSheet('''
+            background-color: #E8F4FD;
+            border: 2px solid #90CAF9;
+            padding: 12px;
+            font-size: 14px;
+            border-radius: 8px;
+        ''')
+        detail_layout.addRow('③', self.choice3_edit)
+
+        self.correct_edit = QLineEdit()
+        self.correct_edit.setStyleSheet('''
+            background-color: #E8F5E9;
+            border: 2px solid #81C784;
+            padding: 12px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 8px;
+        ''')
+        detail_layout.addRow('✓ 正解:', self.correct_edit)
 
         # 解説
-        ttk.Label(scrollable_frame, text="解説:").grid(row=row, column=0, sticky=tk.NW, pady=2)
-        self.explanation_text = tk.Text(scrollable_frame, height=4, width=60, wrap=tk.WORD)
-        self.explanation_text.grid(row=row, column=1, sticky=tk.EW, pady=2)
-        row += 1
+        self.explanation_text = QTextEdit()
+        self.explanation_text.setMaximumHeight(100)
+        detail_layout.addRow('解説:', self.explanation_text)
 
         # 画像URL
-        ttk.Label(scrollable_frame, text="画像URL:").grid(row=row, column=0, sticky=tk.W, pady=2)
-        self.image_url_entry = ttk.Entry(scrollable_frame, width=60)
-        self.image_url_entry.grid(row=row, column=1, sticky=tk.EW, pady=2)
-        row += 1
+        self.image_url_edit = QLineEdit()
+        detail_layout.addRow('画像URL:', self.image_url_edit)
 
         # 画像操作ボタン
-        btn_frame = ttk.Frame(scrollable_frame)
-        btn_frame.grid(row=row, column=1, sticky=tk.W, pady=5)
+        btn_layout = QHBoxLayout()
+        preview_btn = QPushButton('画像プレビュー')
+        preview_btn.clicked.connect(self.preview_image)
+        btn_layout.addWidget(preview_btn)
 
-        ttk.Button(btn_frame, text="画像プレビュー", command=self.preview_image).pack(side=tk.LEFT, padx=2)
-        ttk.Button(btn_frame, text="画像をダウンロード", command=self.download_image).pack(side=tk.LEFT, padx=2)
-        row += 1
+        download_btn = QPushButton('画像をダウンロード')
+        download_btn.clicked.connect(self.download_image)
+        btn_layout.addWidget(download_btn)
 
-        # 画像プレビューエリア
-        self.image_label = ttk.Label(scrollable_frame, text="画像プレビュー")
-        self.image_label.grid(row=row, column=0, columnspan=2, pady=10)
-        row += 1
+        btn_layout.addStretch()
+        detail_layout.addRow('', btn_layout)
 
         # ローカル画像パス
-        ttk.Label(scrollable_frame, text="ローカル画像:").grid(row=row, column=0, sticky=tk.W, pady=2)
-        self.image_path_label = ttk.Label(scrollable_frame, text="未設定", foreground="gray")
-        self.image_path_label.grid(row=row, column=1, sticky=tk.W, pady=2)
-        row += 1
+        self.image_path_label = QLabel('未設定')
+        self.image_path_label.setStyleSheet('color: gray;')
+        detail_layout.addRow('ローカル画像:', self.image_path_label)
+
+        detail_group.setLayout(detail_layout)
+        scroll_layout.addWidget(detail_group)
+
+        scroll.setWidget(scroll_content)
+        layout.addWidget(scroll)
 
         # ボトムボタン
-        bottom_frame = ttk.Frame(right_frame)
-        bottom_frame.pack(fill=tk.X, padx=5, pady=5)
+        bottom_layout = QHBoxLayout()
+        bottom_layout.addStretch()
 
-        ttk.Button(bottom_frame, text="JSONにエクスポート", command=self.export_json).pack(side=tk.RIGHT, padx=5)
-        ttk.Button(bottom_frame, text="CSVをリロード", command=self.load_csv).pack(side=tk.RIGHT, padx=5)
+        reload_btn = QPushButton('CSVをリロード')
+        reload_btn.clicked.connect(self.load_csv)
+        bottom_layout.addWidget(reload_btn)
+
+        export_btn = QPushButton('JSONにエクスポート')
+        export_btn.clicked.connect(self.export_json)
+        bottom_layout.addWidget(export_btn)
+
+        layout.addLayout(bottom_layout)
+
+        return widget
 
     def load_csv(self):
         """CSVファイルを読み込む"""
         try:
             if not CSV_PATH.exists():
-                messagebox.showerror("エラー", f"CSVファイルが見つかりません:\n{CSV_PATH}")
+                print(f'エラー: CSVファイルが見つかりません: {CSV_PATH}')
                 return
 
             self.questions = []
@@ -219,85 +330,66 @@ class QuizEditorApp:
                     self.questions.append(QuizQuestion(row))
 
             self.update_question_list()
-            if self.questions:
-                messagebox.showinfo("成功", f"{len(self.questions)}問の問題を読み込みました")
-            else:
-                messagebox.showwarning("警告", "問題が0件です")
+            print(f'{len(self.questions)}問の問題を読み込みました')
+
         except Exception as e:
             import traceback
             error_detail = traceback.format_exc()
-            messagebox.showerror("エラー", f"CSVの読み込みに失敗しました:\n{e}\n\n{error_detail}")
+            print(f'エラー: CSVの読み込みに失敗: {e}\n{error_detail}')
 
     def update_question_list(self):
         """問題一覧を更新"""
-        self.question_listbox.delete(0, tk.END)
-        for i, q in enumerate(self.questions):
-            display_text = f"{q.id}: {q.question[:40]}..."
-            self.question_listbox.insert(tk.END, display_text)
+        self.question_list.clear()
+        for q in self.questions:
+            display_text = f'{q.id}: {q.question[:40]}...'
+            self.question_list.addItem(display_text)
 
         if self.questions:
-            self.question_listbox.selection_set(0)
-            self.show_question(0)
+            self.question_list.setCurrentRow(0)
 
-    def on_question_select(self, event):
+    def on_question_select(self, index):
         """問題選択時のイベント"""
-        selection = self.question_listbox.curselection()
-        if selection:
-            self.show_question(selection[0])
-
-    def show_question(self, index):
-        """問題詳細を表示"""
-        if index >= len(self.questions):
+        if index < 0 or index >= len(self.questions):
             return
 
         self.current_question_index = index
         q = self.questions[index]
 
-        self.id_label.config(text=q.id)
-        self.theme_label.config(text=q.theme)
-
-        self.question_text.delete('1.0', tk.END)
-        self.question_text.insert('1.0', q.question)
-
-        self.choice1_entry.delete(0, tk.END)
-        self.choice1_entry.insert(0, q.choice1)
-
-        self.choice2_entry.delete(0, tk.END)
-        self.choice2_entry.insert(0, q.choice2)
-
-        self.choice3_entry.delete(0, tk.END)
-        self.choice3_entry.insert(0, q.choice3)
-
-        self.correct_entry.delete(0, tk.END)
-        self.correct_entry.insert(0, q.correct_answer)
-
-        self.explanation_text.delete('1.0', tk.END)
-        self.explanation_text.insert('1.0', q.explanation)
-
-        self.image_url_entry.delete(0, tk.END)
-        self.image_url_entry.insert(0, q.image_url)
+        self.id_label.setText(q.id)
+        self.theme_label.setText(q.theme)
+        self.question_text.setPlainText(q.question)
+        self.choice1_edit.setText(q.choice1)
+        self.choice2_edit.setText(q.choice2)
+        self.choice3_edit.setText(q.choice3)
+        self.correct_edit.setText(q.correct_answer)
+        self.explanation_text.setPlainText(q.explanation)
+        self.image_url_edit.setText(q.image_url)
 
         if q.image_path:
-            self.image_path_label.config(text=q.image_path, foreground="green")
+            self.image_path_label.setText(q.image_path)
+            self.image_path_label.setStyleSheet('color: green;')
         else:
-            self.image_path_label.config(text="未設定", foreground="gray")
+            self.image_path_label.setText('未設定')
+            self.image_path_label.setStyleSheet('color: gray;')
 
         # 画像プレビューをクリア
-        self.image_label.config(image='', text="画像プレビュー")
+        self.image_label.clear()
+        self.image_label.setText('画像プレビュー')
 
     def preview_image(self):
         """Google Drive画像をプレビュー"""
-        url = self.image_url_entry.get().strip()
+        url = self.image_url_edit.text().strip()
         if not url:
-            messagebox.showwarning("警告", "画像URLを入力してください")
+            self.image_label.setText('画像URLを入力してください')
             return
 
         try:
+            self.image_label.setText('読み込み中...')
             # Google DriveのダイレクトURLに変換
             direct_url = self.convert_gdrive_url(url)
 
             # 画像をダウンロード
-            with urllib.request.urlopen(direct_url) as response:
+            with urllib.request.urlopen(direct_url, timeout=10) as response:
                 image_data = response.read()
 
             # PIL Imageとして開く
@@ -306,38 +398,41 @@ class QuizEditorApp:
             # リサイズ（最大400x400）
             image.thumbnail((400, 400), Image.Resampling.LANCZOS)
 
-            # Tkinter PhotoImageに変換
-            photo = ImageTk.PhotoImage(image)
+            # 一時ファイルに保存してQPixmapで読み込み
+            temp_path = Path('/tmp/preview_image.jpg')
+            image.save(temp_path, 'JPEG')
 
-            self.image_label.config(image=photo, text="")
-            self.image_label.image = photo  # 参照を保持
+            pixmap = QPixmap(str(temp_path))
+            self.image_label.setPixmap(pixmap)
 
             # キャッシュに保存
             self.image_cache[self.current_question_index] = image_data
+            print(f'画像プレビュー成功: {url[:50]}...')
 
         except Exception as e:
-            messagebox.showerror("エラー", f"画像の読み込みに失敗しました:\n{e}")
+            self.image_label.setText(f'エラー: {str(e)[:50]}...')
+            print(f'画像読み込みエラー: {e}')
 
     def download_image(self):
         """画像をローカルに保存"""
-        url = self.image_url_entry.get().strip()
+        url = self.image_url_edit.text().strip()
         if not url:
-            messagebox.showwarning("警告", "画像URLを入力してください")
+            print('警告: 画像URLを入力してください')
             return
 
         q = self.questions[self.current_question_index]
 
         try:
-            # 画像データを取得（キャッシュまたはダウンロード）
+            # 画像データを取得
             if self.current_question_index in self.image_cache:
                 image_data = self.image_cache[self.current_question_index]
             else:
                 direct_url = self.convert_gdrive_url(url)
-                with urllib.request.urlopen(direct_url) as response:
+                with urllib.request.urlopen(direct_url, timeout=10) as response:
                     image_data = response.read()
 
             # 保存先ファイル名
-            image_filename = f"{q.id}.jpg"
+            image_filename = f'{q.id}.jpg'
             image_path = IMAGE_DIR / image_filename
 
             # 画像を保存
@@ -346,24 +441,21 @@ class QuizEditorApp:
                 f.write(image_data)
 
             # 問題データを更新
-            q.image_path = f"assets/images/quiz/{image_filename}"
-            self.image_path_label.config(text=q.image_path, foreground="green")
+            q.image_path = f'assets/images/quiz/{image_filename}'
+            self.image_path_label.setText(q.image_path)
+            self.image_path_label.setStyleSheet('color: green;')
 
-            messagebox.showinfo("成功", f"画像を保存しました:\n{image_path}")
+            print(f'画像保存成功: {image_path}')
 
         except Exception as e:
-            messagebox.showerror("エラー", f"画像の保存に失敗しました:\n{e}")
+            print(f'画像保存エラー: {e}')
 
     def convert_gdrive_url(self, url):
         """Google DriveのURLをダイレクトダウンロードURLに変換"""
-        # https://drive.google.com/file/d/FILE_ID/view?usp=sharing
-        # → https://drive.google.com/uc?export=download&id=FILE_ID
-
         if 'drive.google.com' in url:
             if '/file/d/' in url:
                 file_id = url.split('/file/d/')[1].split('/')[0]
-                return f"https://drive.google.com/uc?export=download&id={file_id}"
-
+                return f'https://drive.google.com/uc?export=download&id={file_id}'
         return url
 
     def export_json(self):
@@ -371,9 +463,9 @@ class QuizEditorApp:
         try:
             # JSON形式に変換
             json_data = {
-                "version": "1.0",
-                "totalQuestions": len(self.questions),
-                "questions": [q.to_dict() for q in self.questions]
+                'version': '1.0',
+                'totalQuestions': len(self.questions),
+                'questions': [q.to_dict() for q in self.questions]
             }
 
             # JSONファイルに保存
@@ -381,17 +473,18 @@ class QuizEditorApp:
             with open(JSON_OUTPUT_PATH, 'w', encoding='utf-8') as f:
                 json.dump(json_data, f, ensure_ascii=False, indent=2)
 
-            messagebox.showinfo("成功", f"JSONファイルを保存しました:\n{JSON_OUTPUT_PATH}")
+            print(f'JSONファイル保存成功: {JSON_OUTPUT_PATH}')
 
         except Exception as e:
-            messagebox.showerror("エラー", f"JSONの保存に失敗しました:\n{e}")
+            print(f'JSON保存エラー: {e}')
 
 
 def main():
-    root = tk.Tk()
-    app = QuizEditorApp(root)
-    root.mainloop()
+    app = QApplication(sys.argv)
+    window = QuizEditorWindow()
+    window.show()
+    sys.exit(app.exec())
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
