@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/debug_logger.dart';
 import '../../../services/quiz_data_loader.dart';
-import '../../../services/sekai_kentei_csv_loader.dart';
+import '../../../services/sekai_kentei_json_loader.dart';
 import '../../../services/wrong_answer_storage.dart';
 import '../../../services/audio_service.dart';
 import 'models/sekai_kentei_models.dart';
@@ -22,7 +22,7 @@ class ModernSekaiKenteiLogic extends StateNotifier<SekaiKenteiState> {
   ModernSekaiKenteiLogic({
     QuizDataLoader? dataLoader,
     required AudioService audioService,
-  })  : _dataLoader = dataLoader ?? SekaiKenteiCsvLoader(),
+  })  : _dataLoader = dataLoader ?? SekaiKenteiJsonLoader(),
         _audioService = audioService,
         super(const SekaiKenteiState());
 
