@@ -547,9 +547,44 @@ class QuizEditorWindow(QMainWindow):
         print(f'  📊 合計: {total_with_url}件 / 全{len(self.questions)}問')
         print('='*60)
 
+        # CSVに画像パスを保存
+        print('\n💾 CSVに画像パス情報を保存中...')
+        self.save_csv()
+
+        # JSONを自動エクスポート
+        print('📝 JSONファイルをエクスポート中...')
+        self.export_json()
+
         # 現在の問題を再表示して更新
         if self.questions:
             self.on_question_select(self.current_question_index)
+
+    def save_csv(self):
+        """CSVファイルに保存（画像パス情報を含む）"""
+        try:
+            # 新しいフィールド名
+            fieldnames = ['id', 'question', 'choice1', 'choice2', 'choice3',
+                         'correctAnswer', 'explanation', 'theme', 'img', 'imagePath']
+
+            with open(CSV_PATH, 'w', encoding='utf-8', newline='') as f:
+                writer = csv.DictWriter(f, fieldnames=fieldnames)
+                writer.writeheader()
+                for q in self.questions:
+                    writer.writerow({
+                        'id': q.id,
+                        'question': q.question,
+                        'choice1': q.choice1,
+                        'choice2': q.choice2,
+                        'choice3': q.choice3,
+                        'correctAnswer': q.correct_answer,
+                        'explanation': q.explanation,
+                        'theme': q.theme,
+                        'img': q.image_url,
+                        'imagePath': q.image_path,
+                    })
+            print(f'✓ CSV保存成功: {CSV_PATH}')
+        except Exception as e:
+            print(f'✗ CSV保存エラー: {e}')
 
     def export_json(self):
         """JSONファイルにエクスポート"""
@@ -561,15 +596,20 @@ class QuizEditorWindow(QMainWindow):
                 'questions': [q.to_dict() for q in self.questions]
             }
 
+            # 画像パスがある問題数をカウント
+            images_count = sum(1 for q in self.questions if q.image_path)
+
             # JSONファイルに保存
             JSON_OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
             with open(JSON_OUTPUT_PATH, 'w', encoding='utf-8') as f:
                 json.dump(json_data, f, ensure_ascii=False, indent=2)
 
-            print(f'JSONファイル保存成功: {JSON_OUTPUT_PATH}')
+            print(f'✓ JSON保存成功: {JSON_OUTPUT_PATH}')
+            print(f'  📊 問題数: {len(self.questions)}問')
+            print(f'  🖼️  画像付き: {images_count}問')
 
         except Exception as e:
-            print(f'JSON保存エラー: {e}')
+            print(f'✗ JSON保存エラー: {e}')
 
 
 def main():
