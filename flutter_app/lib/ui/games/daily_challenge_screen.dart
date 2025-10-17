@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'sekai_kentei_game/sekai_kentei_screen.dart';
 import 'sekai_kentei_game/models/sekai_kentei_models.dart';
+import '../theme/app_theme.dart';
 
 /// デイリーチャレンジ画面（世界遺産クイズ専用）
 class DailyChallengeScreen extends ConsumerStatefulWidget {
@@ -18,24 +19,13 @@ class _DailyChallengeScreenState extends ConsumerState<DailyChallengeScreen> {
   }) {
     return SizedBox(
       width: double.infinity,
-      height: 80,
+      height: AppSizes.buttonHeightLarge,
       child: ElevatedButton(
         onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF5B9BD5),
-          foregroundColor: Colors.white,
-          elevation: 4,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
-        ),
+        style: AppButtonStyles.primaryLarge,
         child: Text(
           theme.displayName,
-          style: const TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-          ),
+          style: AppTextStyles.buttonLarge,
           textAlign: TextAlign.center,
         ),
       ),
@@ -46,31 +36,24 @@ class _DailyChallengeScreenState extends ConsumerState<DailyChallengeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        color: const Color(0xFFE3F2FD), // 薄い青色で統一
+        color: AppColors.background,
         child: SafeArea(
           child: Center(
             child: Container(
               constraints: const BoxConstraints(maxWidth: 600),
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(AppSizes.paddingLarge),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Text(
                     '世界検定４級',
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF1976D2),
-                    ),
+                    style: AppTextStyles.title,
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppSizes.paddingMedium),
                   const Text(
                     'テーマを選んで開始',
-                    style: TextStyle(
-                      fontSize: 20,
-                      color: Color(0xFF424242),
-                    ),
+                    style: AppTextStyles.subtitle,
                   ),
                   const SizedBox(height: 48),
 

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../services/wrong_answer_storage.dart';
 import 'sekai_kentei_game/sekai_kentei_screen.dart';
 import 'sekai_kentei_game/models/sekai_kentei_models.dart';
+import '../theme/app_theme.dart';
 
 /// 復習画面（間違えた問題のリスト）
 class ReviewScreen extends ConsumerStatefulWidget {
@@ -96,29 +97,25 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        color: const Color(0xFFE3F2FD), // 薄い青色で統一
+        color: AppColors.background,
         child: SafeArea(
           child: Center(
             child: Container(
               constraints: const BoxConstraints(maxWidth: 600),
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(AppSizes.paddingLarge),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Text(
                     '復習',
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF1976D2),
-                    ),
+                    style: AppTextStyles.title,
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: AppSizes.paddingLarge),
                   Container(
-                    padding: const EdgeInsets.all(24),
+                    padding: const EdgeInsets.all(AppSizes.paddingLarge),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(AppSizes.borderRadiusLarge),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withOpacity(0.1),
@@ -131,58 +128,46 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
                       children: [
                         Text(
                           '間違えた問題が${_wrongAnswerCount}問あります',
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF424242),
-                          ),
+                          style: AppTextStyles.bodyBold,
                           textAlign: TextAlign.center,
                         ),
-                        const SizedBox(height: 32),
+                        const SizedBox(height: AppSizes.paddingExtraLarge),
                         SizedBox(
                           width: double.infinity,
-                          height: 56,
+                          height: AppSizes.buttonHeightMedium,
                           child: ElevatedButton(
                             onPressed: _wrongAnswerCount > 0 ? _startReview : null,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF5B9BD5),
-                              foregroundColor: Colors.white,
-                              disabledBackgroundColor: Colors.grey.shade300,
-                              elevation: 4,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
+                            style: AppButtonStyles.primaryMedium.copyWith(
+                              backgroundColor: WidgetStateProperty.resolveWith((states) {
+                                if (states.contains(WidgetState.disabled)) {
+                                  return AppButtonStyles.disabledBackgroundColor;
+                                }
+                                return AppColors.primary;
+                              }),
                             ),
                             child: const Text(
                               '復習を始める',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
+                              style: AppTextStyles.buttonMedium,
                             ),
                           ),
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: AppSizes.paddingMedium),
                         SizedBox(
                           width: double.infinity,
-                          height: 56,
+                          height: AppSizes.buttonHeightMedium,
                           child: ElevatedButton(
                             onPressed: _wrongAnswerCount > 0 ? _resetWrongAnswers : null,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.red.shade400,
-                              foregroundColor: Colors.white,
-                              disabledBackgroundColor: Colors.grey.shade300,
-                              elevation: 4,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
+                            style: AppButtonStyles.danger.copyWith(
+                              backgroundColor: WidgetStateProperty.resolveWith((states) {
+                                if (states.contains(WidgetState.disabled)) {
+                                  return AppButtonStyles.disabledBackgroundColor;
+                                }
+                                return Colors.red.shade400;
+                              }),
                             ),
                             child: const Text(
                               '間違えた問題をリセット',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
+                              style: AppTextStyles.buttonMedium,
                             ),
                           ),
                         ),
