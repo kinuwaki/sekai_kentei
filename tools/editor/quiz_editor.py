@@ -18,7 +18,7 @@ import urllib.request
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QSplitter, QListWidget, QLabel, QTextEdit, QLineEdit, QPushButton,
-    QGroupBox, QFormLayout, QMessageBox, QScrollArea
+    QGroupBox, QFormLayout, QMessageBox, QScrollArea, QTabWidget
 )
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPixmap
@@ -79,7 +79,7 @@ class QuizEditorWindow(QMainWindow):
     def init_ui(self):
         """UI初期化"""
         self.setWindowTitle('世界遺産検定4級 問題エディター')
-        self.setGeometry(100, 100, 1400, 900)
+        self.setGeometry(100, 100, 2100, 900)
 
         # メインウィジェット
         main_widget = QWidget()
@@ -166,7 +166,7 @@ class QuizEditorWindow(QMainWindow):
         splitter.addWidget(right_widget)
 
         splitter.setStretchFactor(0, 1)
-        splitter.setStretchFactor(1, 3)
+        splitter.setStretchFactor(1, 8)
 
     def create_left_panel(self):
         """左パネル作成"""
@@ -178,10 +178,35 @@ class QuizEditorWindow(QMainWindow):
         title.setStyleSheet('font-size: 16px; font-weight: bold;')
         layout.addWidget(title)
 
-        # 問題リスト
-        self.question_list = QListWidget()
-        self.question_list.currentRowChanged.connect(self.on_question_select)
-        layout.addWidget(self.question_list)
+        # タブウィジェット
+        self.tab_widget = QTabWidget()
+        self.tab_widget.setStyleSheet("""
+            QTabWidget::pane {
+                border: 1px solid #dee2e6;
+                border-radius: 8px;
+                background-color: white;
+            }
+            QTabBar::tab {
+                background-color: #f1f3f5;
+                color: #212529;
+                padding: 10px 20px;
+                margin-right: 2px;
+                border-top-left-radius: 6px;
+                border-top-right-radius: 6px;
+            }
+            QTabBar::tab:selected {
+                background-color: #007AFF;
+                color: white;
+            }
+            QTabBar::tab:hover:!selected {
+                background-color: #e9ecef;
+            }
+        """)
+
+        # 各テーマ用のリストウィジェットを作成
+        self.theme_lists = {}
+
+        layout.addWidget(self.tab_widget)
 
         return widget
 
@@ -211,7 +236,8 @@ class QuizEditorWindow(QMainWindow):
 
         # 問題文
         self.question_text = QTextEdit()
-        self.question_text.setMaximumHeight(120)
+        self.question_text.setMinimumWidth(600)
+        self.question_text.setMaximumHeight(240)
         self.question_text.setStyleSheet('font-size: 14px; font-weight: bold;')
         detail_layout.addRow('問題文:', self.question_text)
 
@@ -221,6 +247,7 @@ class QuizEditorWindow(QMainWindow):
         detail_layout.addRow(choices_label)
 
         self.choice1_edit = QLineEdit()
+        self.choice1_edit.setMinimumWidth(600)
         self.choice1_edit.setStyleSheet('''
             background-color: #E8F4FD;
             border: 2px solid #90CAF9;
@@ -231,6 +258,7 @@ class QuizEditorWindow(QMainWindow):
         detail_layout.addRow('①', self.choice1_edit)
 
         self.choice2_edit = QLineEdit()
+        self.choice2_edit.setMinimumWidth(600)
         self.choice2_edit.setStyleSheet('''
             background-color: #E8F4FD;
             border: 2px solid #90CAF9;
@@ -241,6 +269,7 @@ class QuizEditorWindow(QMainWindow):
         detail_layout.addRow('②', self.choice2_edit)
 
         self.choice3_edit = QLineEdit()
+        self.choice3_edit.setMinimumWidth(600)
         self.choice3_edit.setStyleSheet('''
             background-color: #E8F4FD;
             border: 2px solid #90CAF9;
@@ -251,6 +280,7 @@ class QuizEditorWindow(QMainWindow):
         detail_layout.addRow('③', self.choice3_edit)
 
         self.correct_edit = QLineEdit()
+        self.correct_edit.setMinimumWidth(600)
         self.correct_edit.setStyleSheet('''
             background-color: #E8F5E9;
             border: 2px solid #81C784;
@@ -271,7 +301,8 @@ class QuizEditorWindow(QMainWindow):
 
         # 解説
         self.explanation_text = QTextEdit()
-        self.explanation_text.setMaximumHeight(100)
+        self.explanation_text.setMinimumWidth(600)
+        self.explanation_text.setMaximumHeight(200)
         detail_layout.addRow('解説:', self.explanation_text)
 
         # 画像URL
@@ -361,14 +392,55 @@ class QuizEditorWindow(QMainWindow):
             print(f'エラー: CSVの読み込みに失敗: {e}\n{error_detail}')
 
     def update_question_list(self):
-        """問題一覧を更新"""
-        self.question_list.clear()
-        for q in self.questions:
-            display_text = f'{q.id}: {q.question[:40]}...'
-            self.question_list.addItem(display_text)
+        """問題一覧を更新（テーマ別タブ）"""
+        # 既存のタブをクリア
+        self.tab_widget.clear()
+        self.theme_lists.clear()
 
-        if self.questions:
-            self.question_list.setCurrentRow(0)
+        # テーマ別に問題を分類
+        themes = {}
+        for i, q in enumerate(self.questions):
+            theme = q.theme if q.theme else 'その他'
+            if theme not in themes:
+                themes[theme] = []
+            themes[theme].append((i, q))
+
+        # 各テーマごとにタブとリストを作成
+        for theme_name, theme_questions in sorted(themes.items()):
+            list_widget = QListWidget()
+            list_widget.currentRowChanged.connect(
+                lambda row, theme=theme_name: self.on_theme_question_select(theme, row)
+            )
+
+            for original_index, q in theme_questions:
+                display_text = f'{q.id}: {q.question[:40]}...'
+                list_widget.addItem(display_text)
+
+            self.theme_lists[theme_name] = {
+                'widget': list_widget,
+                'questions': theme_questions  # (original_index, question) のタプルのリスト
+            }
+
+            question_count = len(theme_questions)
+            self.tab_widget.addTab(list_widget, f'{theme_name} ({question_count})')
+
+        # 最初のタブの最初の問題を選択
+        if self.theme_lists:
+            first_theme = sorted(themes.keys())[0]
+            self.theme_lists[first_theme]['widget'].setCurrentRow(0)
+
+    def on_theme_question_select(self, theme_name, row):
+        """テーマタブ内の問題選択時のイベント"""
+        if row < 0:
+            return
+
+        theme_data = self.theme_lists.get(theme_name)
+        if not theme_data or row >= len(theme_data['questions']):
+            return
+
+        # 元のインデックスを取得
+        original_index, q = theme_data['questions'][row]
+        self.on_question_select(original_index)
 
     def on_question_select(self, index):
         """問題選択時のイベント"""
@@ -395,9 +467,36 @@ class QuizEditorWindow(QMainWindow):
             self.image_path_label.setText('未設定')
             self.image_path_label.setStyleSheet('color: gray;')
 
-        # 画像プレビューをクリア
+        # 画像を自動ロード
+        self.auto_load_image()
+
+    def auto_load_image(self):
+        """問題選択時に自動的にローカル画像をロード"""
+        q = self.questions[self.current_question_index]
+
+        # ローカル画像があればそれを表示
+        if q.image_path:
+            local_path = PROJECT_ROOT / 'flutter_app' / q.image_path
+            if local_path.exists():
+                try:
+                    image = Image.open(local_path)
+                    image.thumbnail((400, 400), Image.Resampling.LANCZOS)
+
+                    temp_path = Path('/tmp/preview_image.jpg')
+                    image.save(temp_path, 'JPEG')
+
+                    pixmap = QPixmap(str(temp_path))
+                    self.image_label.setPixmap(pixmap)
+                    return
+                except Exception as e:
+                    print(f'ローカル画像読み込みエラー: {e}')
+
+        # ローカル画像がない場合はプレースホルダー表示
         self.image_label.clear()
-        self.image_label.setText('画像プレビュー')
+        if q.image_url:
+            self.image_label.setText('「画像プレビュー」ボタンでGoogle Driveから読み込み')
+        else:
+            self.image_label.setText('画像なし')
 
     def preview_image(self):
         """画像をプレビュー（ローカル優先、なければGoogle Drive）"""
@@ -405,7 +504,8 @@ class QuizEditorWindow(QMainWindow):
 
         # ローカル画像があればそれを使う
         if q.image_path:
-            local_path = PROJECT_ROOT / 'flutter_app' / q.image_path.replace('assets/', '')
+            # q.image_path は 'assets/images/quiz/q18.jpg' の形式
+            local_path = PROJECT_ROOT / 'flutter_app' / q.image_path
             if local_path.exists():
                 try:
                     image = Image.open(local_path)
