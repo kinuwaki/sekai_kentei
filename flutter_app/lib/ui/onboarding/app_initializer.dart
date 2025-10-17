@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../games/daily_challenge_screen.dart';
+import '../games/main_tab_screen.dart';
 import '../../services/sekai_kentei_csv_loader.dart';
 
 /// アプリ初期化画面
@@ -32,16 +32,16 @@ class _AppInitializerState extends ConsumerState<AppInitializer> {
 
       if (!mounted) return;
 
-      // 直接クイズモード選択画面へ遷移
+      // 直接メインタブ画面へ遷移
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const DailyChallengeScreen()),
+        MaterialPageRoute(builder: (context) => const MainTabScreen()),
       );
     } catch (e) {
       debugPrint('App initialization failed: $e');
-      // エラーの場合もクイズモード選択画面へ
+      // エラーの場合もメインタブ画面へ
       if (mounted) {
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const DailyChallengeScreen()),
+          MaterialPageRoute(builder: (context) => const MainTabScreen()),
         );
       }
     }

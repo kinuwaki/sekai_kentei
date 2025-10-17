@@ -1,59 +1,55 @@
-# Monster Academy - 教育ゲームアプリ
+# 世界検定４級 - World Heritage Quiz Grade 4
 
-子供向けの数学学習ゲームアプリケーションです。カウンティング、比較、フラッシュカード、迷路、パズルなど様々なゲームを通じて楽しく学習できます。
+世界遺産検定4級の学習用クイズアプリケーションです。150問の4択問題を通じて、世界遺産の基礎知識を楽しく学習できます。
 
-## 🎮 搭載ゲーム
+## 🎮 機能
 
-- **数字カウンティングゲーム** - 数字を数える練習
-- **比較ゲーム** - 大小比較の学習
-- **フラッシュカードゲーム** - 音声付き学習カード
-- **迷路ゲーム** - 論理的思考力を育成
-- **パズルゲーム** - 問題解決能力を向上
+- **世界遺産クイズ** - 150問の4択問題（CSV形式で管理）
+- **デイリーチャレンジ** - 毎日異なる問題セット
+- **復習モード** - 間違えた問題を重点的に学習
+- **テストモード選択** - 自分のペースで学習可能
+- **音声フィードバック** - 正解・不正解時の効果音
 
 ## 🌍 対応プラットフォーム
 
-- **Windows** (Windows 10/11)
-- **macOS** (macOS 10.15+)
 - **iOS** (iOS 11.0+)
 - **Android** (Android 5.0+)
 - **Web** (Chrome, Safari, Firefox)
+- **Windows** (Windows 10/11)
+- **macOS** (macOS 10.15+)
 - **Linux** (Ubuntu 18.04+)
 
 ## 📁 プロジェクト構成
 
 ```
-monaka2/
-├── external/                    # 外部ライブラリ
-│   └── flutter/                # Flutter SDK (ローカル)
+sekai_kentei/
 ├── flutter_app/                # メインFlutterアプリケーション
 │   ├── lib/                    # Dartソースコード
 │   │   ├── main.dart          # アプリエントリーポイント
-│   │   ├── core/               # コア機能
-│   │   │   ├── constants.dart  # 定数定義
-│   │   │   └── debug_logger.dart # デバッグログ機能
 │   │   └── ui/                 # UIコンポーネント
 │   │       ├── components/     # 共通コンポーネント
-│   │       ├── debug/          # デバッグ画面
+│   │       ├── onboarding/     # 初期化処理
 │   │       └── games/          # ゲーム画面
-│   │           ├── counting_game/     # 数字カウンティング
-│   │           ├── comparison_game/   # 比較ゲーム
-│   │           ├── flashcard/         # フラッシュカード
-│   │           ├── maze/              # 迷路ゲーム
-│   │           └── puzzle/            # パズルゲーム
-│   ├── assets/                 # 画像・音声ファイル
+│   │           ├── base/              # 基本クラス
+│   │           ├── sekai_kentei_game/ # 世界遺産クイズゲーム
+│   │           ├── daily_challenge_screen.dart
+│   │           ├── review_screen.dart
+│   │           └── test_mode_selection_screen.dart
+│   ├── assets/                 # 画像・音声・問題ファイル
+│   │   ├── quiz/              # クイズ問題（CSV）
+│   │   ├── audio/             # 効果音
+│   │   └── images/            # 画像アセット
 │   ├── android/                # Android固有設定
 │   ├── ios/                    # iOS固有設定
 │   ├── web/                    # Web固有設定
 │   ├── windows/                # Windows固有設定
 │   ├── macos/                  # macOS固有設定
 │   └── linux/                  # Linux固有設定
-├── tools/                      # 開発ツール
-│   └── mcp/                    # MCPサーバー
-│       ├── cipher_mcp_server.py    # 会話履歴管理
-│       └── serena_mcp_server.py    # コード実行支援
+├── assets/                     # 共有アセット
 ├── scripts/                    # ビルドスクリプト
 ├── docs/                       # ドキュメント
-└── .claude_code_config.json    # MCP設定
+└── external/                   # 外部ライブラリ
+    └── flutter/                # Flutter SDK (ローカル)
 ```
 
 ## 🚀 開発環境セットアップ
@@ -127,7 +123,7 @@ cd flutter_app
 
 デバイス選択:
 - `-d windows` - Windows
-- `-d macos` - macOS  
+- `-d macos` - macOS
 - `-d chrome` - Web
 - `-d android` - Android (エミュレータ/実機)
 - `-d ios` - iOS (シミュレータ/実機)
@@ -146,71 +142,56 @@ Core Services Layer
 Platform Layer (Flutter Engine)
 ```
 
-### ゲームモジュール構成
+### 主要コンポーネント
 
 ```dart
 main.dart (アプリエントリーポイント)
     ↓
 ui/
 ├── components/         # 共通UIコンポーネント
-│   ├── game_header.dart
-│   ├── question_display.dart
-│   └── success_effect.dart
-├── debug/             # デバッグ機能
-│   ├── debug_menu_screen.dart
-│   └── debug_overlay.dart
-└── games/             # ゲーム画面
-    ├── counting_game/
-    ├── comparison_game/
-    ├── flashcard/
-    ├── maze/
-    └── puzzle/
+├── onboarding/         # アプリ初期化
+└── games/              # ゲーム画面
+    ├── base/                          # 基本クラス
+    ├── sekai_kentei_game/             # クイズゲームロジック
+    │   ├── models/                    # データモデル
+    │   ├── modern_sekai_kentei_logic.dart
+    │   └── sekai_kentei_screen.dart
+    ├── daily_challenge_screen.dart    # デイリーチャレンジ
+    ├── review_screen.dart             # 復習モード
+    └── test_mode_selection_screen.dart # テストモード選択
 ```
 
 ## 🎯 主要機能
 
-### ゲームロジック
+### クイズシステム
 
-- **CountingGameLogic**: 数字カウンティングゲームの制御
-- **ComparisonGameLogic**: 比較ゲームの制御  
-- **FlashcardLogic**: フラッシュカード学習の制御
-- **MazeLogic**: 迷路ゲームの制御
-- **PuzzleLogic**: パズルゲームの制御
+- **CSV形式の問題管理**: 150問の世界遺産問題を`assets/quiz/世界遺産検定4級150問.csv`で管理
+- **4択問題形式**: 各問題に3つの誤答と1つの正解
+- **テーマ分類**: 「世界遺産の基礎知識」などテーマ別に問題を分類
+- **解説機能**: 各問題に詳しい解説を表示
 
-### コア機能
+### 学習モード
 
-- **DebugLogger**: 統合ログシステム
-- **Constants**: アプリ全体の定数管理
-- **TTSService**: 音声合成サービス（Web/ネイティブ対応）
+- **デイリーチャレンジ**: 毎日異なる問題セットで学習
+- **復習モード**: 間違えた問題を重点的に復習
+- **テストモード**: 自分のペースで問題に取り組む
 
-### UI コンポーネント
+### UI/UX
 
-- **GameHeader**: ゲーム共通ヘッダー
-- **QuestionDisplay**: 問題表示コンポーネント
-- **SuccessEffect**: 成功エフェクト表示
+- **縦固定画面**: スマートフォンでの学習に最適化
+- **全画面表示**: ゲーム感覚で集中して学習
+- **音声フィードバック**: 正解・不正解時の効果音で即座にフィードバック
 
 ## 🔧 開発ガイド
 
-### 新しいゲームの追加
+### 問題の追加・編集
 
-1. `flutter_app/lib/ui/games/new_game/` ディレクトリを作成
-2. 以下のファイルを実装:
-   ```
-   new_game/
-   ├── new_game_logic.dart      # ゲームロジック
-   ├── new_game_screen.dart     # UI画面
-   └── new_game_settings_screen.dart # 設定画面
-   ```
-3. `main.dart` にルートを追加
+`flutter_app/assets/quiz/世界遺産検定4級150問.csv`を編集します：
 
-### MCPサーバーの使用
-
-本プロジェクトには開発支援用のMCPサーバーが含まれています：
-
-- **Cipher MCP Server**: 過去の会話履歴や設計判断を検索・取得
-- **Serena MCP Server**: コード修正・実行支援
-
-設定ファイル: `.claude_code_config.json`
+```csv
+id,question,choice1,choice2,choice3,correctAnswer,explanation,theme
+q1,世界遺産の持つ価値は？,顕著な経済的価値,顕著な観光的価値,顕著な歴史的価値,顕著な普遍的価値,解説文,世界遺産の基礎知識
+```
 
 ### コード品質の維持
 
@@ -294,12 +275,11 @@ pod install
 
 ### 使用技術
 
-- **Flutter**: 3.33.0+
-- **Dart**: 3.6.0+
-- **状態管理**: Riverpod 2.6.1
-- **音声合成**: flutter_tts 4.2.3
-- **音声再生**: audioplayers 6.5.0
-- **パス操作**: path_provider 2.1.5
+- **Flutter**: 3.8.1+
+- **Dart**: 3.8.1+
+- **状態管理**: Riverpod 2.4.9
+- **音声再生**: audioplayers 6.0.0
+- **データ永続化**: shared_preferences 2.5.3
 
 ### サポート対象
 
@@ -310,26 +290,13 @@ pod install
   - macOS: 10.15+
   - Web: Chrome 57+, Safari 11+, Firefox 52+
 
-## 🤝 コントリビューション
-
-1. Issues でバグ報告や機能要望を作成
-2. フォークしてfeatureブランチを作成
-3. 新機能やバグ修正を実装
-4. テストを追加・実行
-5. プルリクエストを送信
-
-### 開発ガイドライン
-
-- コードスタイル: `flutter format` を使用
-- テスト: 新機能には必ずテストを追加
-- コミットメッセージ: 明確で簡潔な説明を記載
-
 ## 📖 参考リンク
 
 - [Flutter Documentation](https://docs.flutter.dev/)
 - [Dart Language Guide](https://dart.dev/guides)
 - [Riverpod Documentation](https://riverpod.dev/)
 - [Material Design Guidelines](https://m3.material.io/)
+- [世界遺産検定公式サイト](https://www.sekaken.jp/)
 
 ## 📄 ライセンス
 

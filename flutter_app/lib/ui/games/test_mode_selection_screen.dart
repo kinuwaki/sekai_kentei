@@ -74,40 +74,6 @@ class _TestModeSelectionScreenState extends ConsumerState<TestModeSelectionScree
           ),
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 2,
-        backgroundColor: Colors.white,
-        selectedItemColor: Colors.blue,
-        unselectedItemColor: Colors.grey,
-        type: BottomNavigationBarType.fixed,
-        selectedFontSize: 12,
-        unselectedFontSize: 12,
-        onTap: (index) {
-          print('[TestModeSelection] BottomNav tapped: index=$index');
-          if (index == 2) {
-            // テストタブ - 現在の画面なので何もしない
-            print('[TestModeSelection] Same tab, ignoring');
-            return;
-          }
-          print('[TestModeSelection] Popping with target tab index: $index');
-          // DailyChallengeScreenまで戻り、タップされたタブのインデックスを返す
-          Navigator.pop(context, {'targetTabIndex': index});
-        },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.school, size: 24),
-            label: '問題演習',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.history_edu, size: 24),
-            label: '復習',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.assignment, size: 24),
-            label: 'テスト',
-          ),
-        ],
-      ),
     );
   }
 

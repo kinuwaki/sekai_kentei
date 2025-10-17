@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'ui/games/daily_challenge_screen.dart';
 import 'ui/onboarding/app_initializer.dart';
 
 void main() async {
@@ -33,9 +32,6 @@ class MiniGameApp extends StatelessWidget {
         fontFamily: 'NotoSansJP',
       ),
       home: const AppInitializer(),
-      routes: {
-        '/daily_challenge': (context) => const DailyChallengeScreen(),
-      },
     );
   }
 }

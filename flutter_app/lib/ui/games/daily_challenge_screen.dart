@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'sekai_kentei_game/sekai_kentei_screen.dart';
 import 'sekai_kentei_game/models/sekai_kentei_models.dart';
-import 'review_screen.dart';
-import 'test_mode_selection_screen.dart';
 
 /// デイリーチャレンジ画面（世界遺産クイズ専用）
 class DailyChallengeScreen extends ConsumerStatefulWidget {
@@ -14,9 +12,6 @@ class DailyChallengeScreen extends ConsumerStatefulWidget {
 }
 
 class _DailyChallengeScreenState extends ConsumerState<DailyChallengeScreen> {
-  int _selectedIndex = 0;
-
-
   Widget _buildThemeButton({
     required QuizTheme theme,
     required VoidCallback onPressed,
@@ -45,83 +40,6 @@ class _DailyChallengeScreenState extends ConsumerState<DailyChallengeScreen> {
         ),
       ),
     );
-  }
-
-  void _onTabTapped(int index) async {
-    print('[DailyChallenge] _onTabTapped: index=$index, currentIndex=$_selectedIndex');
-
-    // 現在のタブと同じタブをタップした場合は何もしない
-    if (_selectedIndex == index) {
-      print('[DailyChallenge] Same tab tapped, ignoring');
-      return;
-    }
-
-    // タブに応じたアクションを実行
-    switch (index) {
-      case 0:
-        // 問題演習 - 現在の画面なので何もしない
-        print('[DailyChallenge] Tab 0 - staying on current screen');
-        setState(() {
-          _selectedIndex = 0;
-        });
-        break;
-      case 1:
-        print('[DailyChallenge] Tab 1 - navigating to Review');
-        setState(() {
-          _selectedIndex = 1;
-        });
-        final result = await Navigator.push(
-          context,
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) => const ReviewScreen(),
-            transitionDuration: Duration.zero,
-            reverseTransitionDuration: Duration.zero,
-          ),
-        );
-        // 戻ってきた時の処理
-        if (mounted) {
-          setState(() {
-            _selectedIndex = 0;
-          });
-          print('[DailyChallenge] Returned from Review with result: $result');
-
-          // 他のタブに遷移する必要があるかチェック
-          if (result is Map && result['targetTabIndex'] != null) {
-            final targetIndex = result['targetTabIndex'] as int;
-            print('[DailyChallenge] Navigating to target tab: $targetIndex');
-            _onTabTapped(targetIndex);
-          }
-        }
-        break;
-      case 2:
-        print('[DailyChallenge] Tab 2 - navigating to Test');
-        setState(() {
-          _selectedIndex = 2;
-        });
-        final result = await Navigator.push(
-          context,
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) => const TestModeSelectionScreen(),
-            transitionDuration: Duration.zero,
-            reverseTransitionDuration: Duration.zero,
-          ),
-        );
-        // 戻ってきた時の処理
-        if (mounted) {
-          setState(() {
-            _selectedIndex = 0;
-          });
-          print('[DailyChallenge] Returned from Test with result: $result');
-
-          // 他のタブに遷移する必要があるかチェック
-          if (result is Map && result['targetTabIndex'] != null) {
-            final targetIndex = result['targetTabIndex'] as int;
-            print('[DailyChallenge] Navigating to target tab: $targetIndex');
-            _onTabTapped(targetIndex);
-          }
-        }
-        break;
-    }
   }
 
   @override
@@ -183,30 +101,6 @@ class _DailyChallengeScreenState extends ConsumerState<DailyChallengeScreen> {
             ),
           ),
         ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: _onTabTapped,
-        backgroundColor: Colors.white,
-        selectedItemColor: Colors.blue,
-        unselectedItemColor: Colors.grey,
-        type: BottomNavigationBarType.fixed,
-        selectedFontSize: 12,
-        unselectedFontSize: 12,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.school, size: 24),
-            label: '問題演習',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.history_edu, size: 24),
-            label: '復習',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.assignment, size: 24),
-            label: 'テスト',
-          ),
-        ],
       ),
     );
   }
