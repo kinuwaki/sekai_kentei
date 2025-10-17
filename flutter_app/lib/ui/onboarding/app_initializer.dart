@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../games/main_tab_screen.dart';
 import '../../services/sekai_kentei_json_loader.dart';
 import '../../services/wrong_answer_storage.dart';
+import '../../main.dart' show notificationService;
 
 /// アプリ初期化画面
 /// 設定に応じてデバッグメニュー、初回登録、メインメニューに振り分け
@@ -32,6 +33,11 @@ class _AppInitializerState extends ConsumerState<AppInitializer> {
       debugPrint('データマイグレーション実行中...');
       await WrongAnswerStorage.migrateFromOldFormat(allQuestions);
       debugPrint('データマイグレーション完了');
+
+      // デイリー通知をスケジュール（翌朝8:00）
+      debugPrint('デイリー通知をスケジュール中...');
+      await notificationService.scheduleNextMorning();
+      debugPrint('デイリー通知スケジュール完了');
 
       // 少し待ってから判定（スプラッシュ的な効果）
       await Future.delayed(const Duration(milliseconds: 300));

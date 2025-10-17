@@ -51,5 +51,10 @@
 	</array>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>このアプリは音声認識機能を使用します</string>
+	<!-- ローカル通知の表示許可 -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
 </dict>
 </plist>

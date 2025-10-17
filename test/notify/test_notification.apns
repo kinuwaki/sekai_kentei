@@ -1,0 +1,14 @@
+{
+  "Simulator Target Bundle": "jp.monaka.game",
+  "aps": {
+    "alert": {
+      "title": "世界検定4級 - 本日の問題",
+      "body": "今日の問題に挑戦しましょう！"
+    },
+    "sound": "default",
+    "badge": 1
+  },
+  "customData": {
+    "questionId": "q1"
+  }
+}

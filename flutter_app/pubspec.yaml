@@ -36,6 +36,8 @@ dependencies:
   js: ^0.7.2  # For @JS annotations in web platform
   freezed_annotation: ^3.1.0
   shared_preferences: ^2.5.3  # For progress storage
+  flutter_local_notifications: ^17.2.0  # For daily quiz notifications
+  timezone: ^0.9.3  # For timezone-aware scheduling
 
 dev_dependencies:
   flutter_test:

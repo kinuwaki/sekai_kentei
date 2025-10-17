@@ -1,4 +1,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 通知権限（Android 13+） -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <!-- 正確なアラーム権限（Android 12+、厳密な8:00配信が必要な場合） -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
+    <!-- バイブレーション -->
+    <uses-permission android:name="android.permission.VIBRATE"/>
+    <!-- 起動時の通知再スケジュール -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+
     <application
         android:label="flutter_app"
         android:name="${applicationName}"
@@ -30,6 +39,14 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+
+        <!-- 通知レシーバー（起動時の通知再スケジュール用） -->
+        <receiver android:name="com.dexterous.flutterlocalnotifications.BootCompletedReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+            </intent-filter>
+        </receiver>
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and
